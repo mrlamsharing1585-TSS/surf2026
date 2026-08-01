@@ -576,10 +576,12 @@ function renderAiFileQueue(){
   wrap.innerHTML = aiQueue.map((q,i)=>{
     const labels = { pending:"Chờ chấm", extracting:"Đang đọc file…", running:"Đang chấm điểm AI…", done:"Xong", skipped:"Đã chấm trước — bỏ qua", error:"Lỗi" };
     const cls = q.status === "extracting" ? "running" : q.status === "skipped" ? "pending" : q.status;
-    const title = q.status === "error" && q.error ? ` title="${escapeHtml(q.error)}"` : "";
-    return `<div class="fq-row">
-      <span class="fq-name">${escapeHtml(q.teamName)}</span>
-      <span class="fq-status ${cls}"${title}>${labels[q.status]}</span>
+    return `<div class="fq-row" style="flex-direction:column;align-items:stretch">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="fq-name">${escapeHtml(q.teamName)}</span>
+        <span class="fq-status ${cls}">${labels[q.status]}</span>
+      </div>
+      ${q.status==="error" && q.error ? `<div style="color:var(--danger);font-size:11.5px;margin-top:4px">${escapeHtml(q.error)}</div>` : ""}
     </div>`;
   }).join("");
 }
