@@ -210,7 +210,7 @@ table.rank tr:hover td{background:#FAFBFC}
 <body>
 
 <header>
-  <h1>Chấm thi sơ khảo <small>SURF 2026 · Khởi nghiệp đổi mới sáng tạo Đà Nẵng · Chấm bằng AI</small></h1>
+  <h1>Chấm thi sơ khảo <small>SURF 2026 · Khởi nghiệp đổi mới sáng tạo Đà Nẵng</small></h1>
   <div class="save-status" id="saveStatus" style="margin-left:auto"></div>
   <div class="header-logos">
     <img src="logo-topskills.png" alt="TOPSKILLS">
@@ -257,7 +257,7 @@ table.rank tr:hover td{background:#FAFBFC}
 
   <main id="main">
     <div class="tabs">
-      <div class="tab active" data-tab="ai">🤖 Chấm bằng AI</div>
+      <div class="tab active" data-tab="ai">Chấm điểm hồ sơ</div>
       <div class="tab" data-tab="rank">Bảng xếp hạng</div>
     </div>
     <div id="panelWrap">
@@ -534,7 +534,7 @@ function renderRankPanel(){
     </tr>`;
   });
   html += `</tbody></table></div>
-  <p style="font-size:11.5px;color:var(--sub);margin-top:10px">Điểm do AI (${escapeHtml(AI_JUDGE_NAME)}) chấm 1 lần cho mỗi đội. Muốn sửa lại, vào tab "Chấm bằng AI" và bấm "Chấm lại" ở đội tương ứng.</p>`;
+  <p style="font-size:11.5px;color:var(--sub);margin-top:10px">Điểm do AI (${escapeHtml(AI_JUDGE_NAME)}) chấm 1 lần cho mỗi đội. Muốn sửa lại, vào tab "Chấm điểm hồ sơ" và bấm "Chấm lại" ở đội tương ứng.</p>`;
   wrap.innerHTML = html;
   document.getElementById("btnExportRank").addEventListener("click", exportRankingCSV);
 }
