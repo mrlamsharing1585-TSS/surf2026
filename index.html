@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chấm thi sơ khảo — SURF 2026</title>
+<style>
+:root{
+  --navy:#0F2A43;
+  --navy-2:#163B5C;
+  --accent:#1E7F6B;
+  --accent-soft:#E4F3EF;
+  --ink:#1A2432;
+  --sub:#5C6B7C;
+  --bg:#F1F4F7;
+  --card:#FFFFFF;
+  --line:#E1E6EC;
+  --warn:#C97A1F;
+  --warn-soft:#FBF1E3;
+  --danger:#C0392B;
+  --danger-soft:#FBEAE8;
+  --r-lg:16px;
+  --r-md:10px;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 8px 22px rgba(16,24,40,.06);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  -webkit-tap-highlight-color:transparent;
+}
+button{font:inherit;cursor:pointer}
+input,textarea{font:inherit}
+
+/* ===== Header ===== */
+header{
+  background:linear-gradient(160deg,var(--navy) 0%,var(--navy-2) 100%);
+  color:#fff;padding:16px 20px;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+}
+header h1{font-size:17px;font-weight:800;letter-spacing:.2px}
+header h1 small{display:block;font-weight:500;opacity:.7;font-size:11px;letter-spacing:1px;margin-top:2px}
+.judge-field{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px}
+.judge-field input{
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+  color:#fff;border-radius:8px;padding:7px 10px;width:180px;
+}
+.judge-field input::placeholder{color:rgba(255,255,255,.6)}
+.save-status{font-size:11px;opacity:.7;min-width:90px}
+
+/* ===== Layout ===== */
+#app{display:flex;height:calc(100vh - 68px);min-height:520px}
+#sidebar{
+  width:300px;flex:none;background:var(--card);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+#sidebar .tools{padding:12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.btn{
+  border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 10px;
+  font-size:12.5px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:6px;justify-content:center;
+  transition:background .15s;
+}
+.btn:hover{background:#F5F7FA}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:#186B5A}
+.btn.danger{color:var(--danger);border-color:#F1CFC9}
+.btn.danger:hover{background:var(--danger-soft)}
+.btn.small{padding:6px 8px;font-size:11.5px}
+.row2{display:flex;gap:8px}
+.row2 .btn{flex:1}
+
+#teamSearch{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px}
+
+#teamList{flex:1;overflow-y:auto;padding:8px}
+.team-item{
+  padding:10px 10px;border-radius:10px;cursor:pointer;margin-bottom:4px;
+  display:flex;align-items:center;gap:10px;border:1px solid transparent;
+}
+.team-item:hover{background:#F5F7FA}
+.team-item.active{background:var(--accent-soft);border-color:#BFE3D8}
+.status-dot{width:9px;height:9px;border-radius:50%;flex:none;background:#D6DBE1}
+.status-dot.done{background:var(--accent)}
+.status-dot.partial{background:var(--warn)}
+.team-item .ti-main{flex:1;min-width:0}
+.team-item .ti-code{font-size:10.5px;color:var(--sub);font-weight:600;letter-spacing:.3px}
+.team-item .ti-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty-hint{padding:24px 16px;color:var(--sub);font-size:12.5px;text-align:center;line-height:1.6}
+
+/* ===== Main ===== */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.tabs{display:flex;gap:4px;padding:10px 20px 0;border-bottom:1px solid var(--line);background:var(--card);flex-wrap:wrap;overflow-x:auto}
+.tab{padding:10px 16px;font-size:13px;font-weight:700;color:var(--sub);border-bottom:2px solid transparent;border-radius:0}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+#panelWrap{flex:1;overflow-y:auto;padding:22px}
+
+/* Scoring panel */
+.score-header{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow);
+}
+.score-header .sh-title{flex:1;min-width:0}
+.score-header .sh-title .code{font-size:11px;color:var(--sub);font-weight:700;letter-spacing:.5px}
+.score-header .sh-title h2{font-size:18px;font-weight:800;margin-top:2px}
+.score-header .sh-total{text-align:right}
+.score-header .sh-total .num{font-size:28px;font-weight:900;color:var(--accent);line-height:1}
+.score-header .sh-total .lbl{font-size:11px;color:var(--sub);margin-top:2px}
+
+.group-card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
+  margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow);
+}
+.group-head{
+  display:flex;align-items:center;gap:10px;padding:13px 18px;background:#FAFBFC;border-bottom:1px solid var(--line);
+}
+.group-head .gnum{
+  width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;font-size:12px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;flex:none;
+}
+.group-head .gname{flex:1;font-size:14px;font-weight:700}
+.group-head .gscore{font-size:13px;font-weight:800;color:var(--accent)}
+.group-body{padding:6px 18px}
+.item-row{
+  display:flex;align-items:center;gap:14px;padding:11px 0;border-bottom:1px solid #F0F2F5;
+}
+.item-row:last-child{border-bottom:none}
+.item-row .ilabel{flex:1;font-size:13px;line-height:1.5;color:var(--ink)}
+.item-row .imax{font-size:11px;color:var(--sub);flex:none;width:56px;text-align:right}
+.item-row input[type=number]{
+  width:64px;flex:none;border:1px solid var(--line);border-radius:8px;padding:7px 8px;
+  font-size:13px;text-align:center;font-weight:700;
+}
+.item-row input[type=number]:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+
+/* Ranking table */
+.rank-toolbar{display:flex;align-items:center;margin-bottom:14px;gap:10px}
+.rank-toolbar h2{font-size:16px;font-weight:800;flex:1}
+table.rank{width:100%;border-collapse:collapse;background:var(--card);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow)}
+table.rank th,table.rank td{padding:10px 12px;font-size:12.5px;text-align:left;border-bottom:1px solid var(--line)}
+table.rank th{background:#FAFBFC;color:var(--sub);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0}
+table.rank td.num,table.rank th.num{text-align:center}
+table.rank tr:last-child td{border-bottom:none}
+table.rank tr:hover td{background:#FAFBFC}
+.rank-badge{
+  display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;
+  font-weight:800;font-size:11.5px;background:#EEF1F4;color:var(--sub);
+}
+.rank-badge.top1{background:#FCE7B0;color:#7A5B00}
+.rank-badge.top2{background:#E6E9EE;color:#4A5568}
+.rank-badge.top3{background:#F3D9BE;color:#7A3E10}
+.total-cell{font-weight:800;color:var(--accent)}
+.judges-cell{color:var(--sub);font-size:11.5px}
+
+.placeholder{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;
+  color:var(--sub);text-align:center;gap:8px;padding:40px;
+}
+.placeholder .big{font-size:15px;font-weight:700;color:var(--ink)}
+
+/* Manual add form */
+.manual-add{display:none;flex-direction:column;gap:6px;padding:10px;border:1px dashed var(--line);border-radius:8px;margin-top:4px}
+.manual-add.open{display:flex}
+.manual-add input{border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12px}
+
+/* Toast */
+#toast{
+  position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:#fff;padding:9px 18px;border-radius:20px;font-size:12.5px;font-weight:600;
+  opacity:0;transition:all .25s;pointer-events:none;box-shadow:var(--shadow);z-index:50;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* AI scoring */
+.ai-card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:18px 20px;margin-bottom:16px;box-shadow:var(--shadow);
+}
+.ai-card h3{font-size:14px;font-weight:800;margin-bottom:12px}
+.ai-card label{display:block;font-size:12px;font-weight:700;color:var(--sub);margin:10px 0 4px}
+.ai-card input[type=text],.ai-card input[type=password]{
+  width:100%;max-width:420px;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13px;
+}
+.ai-card .hint{font-size:11.5px;color:var(--sub);margin-top:8px;line-height:1.6;max-width:560px}
+.ai-card .row2{display:flex;gap:20px;flex-wrap:wrap}
+.file-queue{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.fq-row{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:12.5px;
+}
+.fq-row .fq-name{flex:1;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fq-status{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;flex:none}
+.fq-status.pending{background:#EEF1F4;color:var(--sub)}
+.fq-status.running{background:var(--warn-soft);color:var(--warn)}
+.fq-status.done{background:var(--accent-soft);color:var(--accent)}
+.fq-status.error{background:var(--danger-soft);color:var(--danger)}
+.ai-results{display:flex;flex-direction:column;gap:10px}
+.ai-result-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden}
+.ai-result-head{display:flex;align-items:center;gap:12px;padding:13px 18px;cursor:pointer}
+.ai-result-head .name{flex:1;font-size:13.5px;font-weight:700}
+.ai-result-head .score{font-size:14px;font-weight:800;color:var(--accent)}
+.ai-result-head .chev{font-size:11px;color:var(--sub);transition:transform .15s}
+.ai-result-head.open .chev{transform:rotate(90deg)}
+.ai-result-body{display:none;padding:0 18px 16px;border-top:1px solid var(--line)}
+.ai-result-body.open{display:block}
+.ai-explain-row{padding:10px 0;border-bottom:1px solid #F0F2F5}
+.ai-explain-row:last-child{border-bottom:none}
+.ai-explain-row .eh{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;margin-bottom:3px}
+.ai-explain-row .et{font-size:12px;color:var(--sub);line-height:1.6}
+.ai-overall{background:var(--accent-soft);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:12.5px;color:#134F41;line-height:1.6}
+
+.ai-suggest{
+  background:var(--accent-soft);border:1px solid #BFE3D8;border-radius:var(--r-lg);
+  padding:14px 18px;margin-bottom:14px;
+}
+.ai-suggest .as-head{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.ai-suggest .as-head b{font-size:13px}
+.ai-suggest .as-head .btn{margin-left:auto}
+.ai-suggest .as-body{display:none;margin-top:10px}
+.ai-suggest .as-body.open{display:block}
+.ai-suggest .toggle-link{font-size:11.5px;color:var(--accent);font-weight:700;cursor:pointer;text-decoration:underline}
+
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Chấm thi sơ khảo <small>SURF 2026 · Khởi nghiệp đổi mới sáng tạo Đà Nẵng</small></h1>
+  <div class="judge-field">
+    <span>Giám khảo:</span>
+    <input id="judgeName" placeholder="Nhập tên giám khảo…">
+  </div>
+  <div class="save-status" id="saveStatus"></div>
+</header>
+
+<div id="app">
+  <aside id="sidebar">
+    <div class="tools">
+      <input type="file" id="csvInput" accept=".csv,text/csv" class="hidden">
+      <button class="btn primary" id="btnUpload">⬆ Tải file danh sách đội (CSV)</button>
+      <button class="btn small" id="btnManualToggle">+ Thêm đội thủ công</button>
+      <div class="manual-add" id="manualAdd">
+        <input id="manCode" placeholder="Mã số / STT (tuỳ chọn)">
+        <input id="manName" placeholder="Tên đội / dự án">
+        <button class="btn primary small" id="manSubmit">Thêm</button>
+      </div>
+      <input id="teamSearch" placeholder="🔍 Tìm đội…">
+      <div class="row2">
+        <button class="btn small" id="btnExportBackup">Xuất backup (.json)</button>
+        <button class="btn small" id="btnImportBackup">Nhập backup</button>
+      </div>
+      <input type="file" id="jsonInput" accept=".json,application/json" class="hidden">
+      <button class="btn danger small" id="btnReset">Xoá toàn bộ dữ liệu</button>
+    </div>
+    <div id="teamList"><div class="empty-hint">Chưa có đội thi nào.<br>Tải lên file CSV danh sách đội để bắt đầu chấm.</div></div>
+  </aside>
+
+  <main id="main">
+    <div class="tabs">
+      <div class="tab active" data-tab="score">Chấm điểm</div>
+      <div class="tab" data-tab="rank">Bảng xếp hạng</div>
+      <div class="tab" data-tab="ai">🤖 Chấm bằng AI</div>
+    </div>
+    <div id="panelWrap">
+      <div id="scorePanel"></div>
+      <div id="rankPanel" class="hidden"></div>
+      <div id="aiPanel" class="hidden"></div>
+    </div>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ===================== Tiêu chí chấm điểm (Vòng sơ khảo SURF 2026) ===================== */
+const CRITERIA = [
+  { id:1, name:"Sự cần thiết, mức độ ứng dụng", max:20, items:[
+    {id:"1.1", label:"Sự cần thiết của sản phẩm, dịch vụ đối với nhu cầu thị trường và cộng đồng", max:5},
+    {id:"1.2", label:"Mức độ ứng dụng công nghệ phù hợp trong việc giải quyết vấn đề", max:5},
+    {id:"1.3", label:"Lợi ích của sản phẩm/dịch vụ mang lại cho khách hàng và xã hội", max:5},
+    {id:"1.4", label:"Đối tượng và phân khúc khách hàng", max:5},
+  ]},
+  { id:2, name:"Tính mới, độc đáo, sáng tạo", max:25, items:[
+    {id:"2.1", label:"Mức độ ứng dụng công nghệ lõi, tạo ra giá trị mới hoặc tối ưu hoá quy trình", max:10},
+    {id:"2.2", label:"Giá trị khác biệt của sản phẩm so với thị trường hiện có", max:5},
+    {id:"2.3", label:"Tính độc đáo, sáng tạo trong ý tưởng và mô hình", max:5},
+    {id:"2.4", label:"Khả năng đổi mới sáng tạo hướng tới phát triển bền vững", max:5},
+  ]},
+  { id:3, name:"Tính khả thi, tiềm năng phát triển của dự án/doanh nghiệp", max:25, items:[
+    {id:"3.1", label:"Tính khả thi về mức giá, phương thức tiếp cận thị trường, marketing", max:5},
+    {id:"3.2", label:"Khả năng tổ chức sản xuất, kinh doanh, huy động nguồn lực", max:5},
+    {id:"3.3", label:"Khả năng mở rộng quy mô và ứng dụng công nghệ vào vận hành hoặc cải tiến", max:10},
+    {id:"3.4", label:"Tính khả thi trong kế hoạch kinh doanh; dự kiến doanh thu, lợi nhuận", max:5},
+  ]},
+  { id:4, name:"Năng lực và tinh thần của đội ngũ", max:20, items:[
+    {id:"4.1", label:"Ý chí, khát vọng, tinh thần học hỏi, khả năng phát triển của đội ngũ", max:5},
+    {id:"4.2", label:"Sự phối hợp, phân công rõ ràng giữa các thành viên; kỹ năng làm việc nhóm", max:5},
+    {id:"4.3", label:"Kỹ năng thuyết trình, khả năng phản biện, giao tiếp và thể hiện tinh thần khởi nghiệp", max:5},
+    {id:"4.4", label:"Mức độ chủ động học tập, ứng dụng công nghệ trong quá trình phát triển dự án/doanh nghiệp", max:5},
+  ]},
+  { id:5, name:"Hình thức trình bày và sản phẩm minh chứng", max:15, items:[
+    {id:"5.1", label:"Hình thức trình bày ấn tượng, mạch lạc, thể hiện rõ hàm lượng công nghệ", max:5},
+    {id:"5.2", label:"Video clip, poster, và bản mô tả Canvas thể hiện rõ ý tưởng, mô hình kinh doanh và yếu tố đổi mới sáng tạo", max:5},
+    {id:"5.3", label:"Giao diện, thiết kế hoặc nguyên mẫu (prototype) có tính trực quan dễ hiểu", max:5},
+  ]},
+];
+const ALL_ITEMS = CRITERIA.flatMap(g => g.items.map(it => ({...it, groupId: g.id})));
+const MAX_TOTAL = CRITERIA.reduce((s,g)=>s+g.max,0); // 105
+const AI_JUDGE_NAME = "🤖 AI (Claude)";
+
+/* ===================== State ===================== */
+const STORAGE_KEY = "surf2026_scoring_v1";
+const AI_CONFIG_KEY = "surf2026_ai_config_v1"; // kept separate so API key is never included in backup export
+let state = loadState();
+let currentTeamId = state.teams[0] ? state.teams[0].id : null;
+let currentTab = "score";
+let saveTimer = null;
+let aiQueue = []; // [{file, teamId, teamName, status, error}]
+let aiRunning = false;
+
+function defaultState(){ return { judgeName:"", teams:[], scores:{}, notes:{} }; }
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    return { judgeName: parsed.judgeName||"", teams: parsed.teams||[], scores: parsed.scores||{}, notes: parsed.notes||{} };
+  }catch(e){ return defaultState(); }
+}
+function loadAiConfig(){
+  try{
+    const raw = localStorage.getItem(AI_CONFIG_KEY);
+    if(!raw) return { apiKey:"", model:"claude-sonnet-5" };
+    const p = JSON.parse(raw);
+    return { apiKey: p.apiKey||"", model: p.model||"claude-sonnet-5" };
+  }catch(e){ return { apiKey:"", model:"claude-sonnet-5" }; }
+}
+function saveAiConfig(cfg){ localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(cfg)); }
+let aiConfig = loadAiConfig();
+function persist(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  const el = document.getElementById("saveStatus");
+  el.textContent = "Đã lưu · " + new Date().toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+}
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(persist, 250);
+}
+function uid(){ return "t_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,8); }
+
+/* ===================== Toast ===================== */
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toast._h);
+  toast._h = setTimeout(()=>t.classList.remove("show"), 2200);
+}
+
+/* ===================== CSV parsing ===================== */
+function splitCSVLine(line){
+  const out = []; let cur = ""; let inQ = false;
+  for(let i=0;i<line.length;i++){
+    const c = line[i];
+    if(inQ){
+      if(c === '"'){ if(line[i+1] === '"'){ cur += '"'; i++; } else inQ = false; }
+      else cur += c;
+    } else {
+      if(c === '"') inQ = true;
+      else if(c === ','){ out.push(cur); cur=""; }
+      else cur += c;
+    }
+  }
+  out.push(cur);
+  return out;
+}
+function parseTeamsCSV(text){
+  text = text.replace(/^﻿/, "");
+  const lines = text.split(/\r\n|\n|\r/).map(l=>l.trim()).filter(l=>l.length>0);
+  if(lines.length === 0) return [];
+  // Detect & skip header row (contains letters typical of headers, no long project-name-looking content needed — heuristic: if first cell isn't a number and matches common header words)
+  const headerWords = ["stt","stt.","ma so","mã số","ma","code","id","ten doi","tên đội","ten","tên","du an","dự án"];
+  let startIdx = 0;
+  const firstCells = splitCSVLine(lines[0]).map(c=>c.trim().toLowerCase());
+  const looksHeader = firstCells.some(c => headerWords.some(h => c.includes(h)));
+  if(looksHeader) startIdx = 1;
+  const teams = [];
+  for(let i=startIdx;i<lines.length;i++){
+    const cells = splitCSVLine(lines[i]).map(c=>c.trim());
+    if(cells.every(c=>c==="")) continue;
+    let code, name, extra;
+    if(cells.length >= 2 && cells[0] !== ""){
+      code = cells[0]; name = cells[1]; extra = cells.slice(2).filter(Boolean).join(" | ");
+    } else {
+      code = String(teams.length+1); name = cells[0]||""; extra = cells.slice(1).filter(Boolean).join(" | ");
+    }
+    if(name) teams.push({ id: uid(), code, name, extra });
+  }
+  return teams;
+}
+
+/* ===================== Scoring helpers ===================== */
+function getJudge(){ return (state.judgeName||"").trim() || "Giám khảo ẩn danh"; }
+function getScore(teamId, judge, itemId){
+  return state.scores?.[teamId]?.[judge]?.[itemId];
+}
+function setScore(teamId, judge, itemId, value){
+  if(!state.scores[teamId]) state.scores[teamId] = {};
+  if(!state.scores[teamId][judge]) state.scores[teamId][judge] = {};
+  if(value === null || value === "" || isNaN(value)) delete state.scores[teamId][judge][itemId];
+  else state.scores[teamId][judge][itemId] = value;
+  scheduleSave();
+}
+function setNote(teamId, judge, key, text){
+  if(!state.notes[teamId]) state.notes[teamId] = {};
+  if(!state.notes[teamId][judge]) state.notes[teamId][judge] = {};
+  state.notes[teamId][judge][key] = text;
+  scheduleSave();
+}
+function getNotes(teamId, judge){
+  return state.notes?.[teamId]?.[judge] || null;
+}
+function judgeTotalForTeam(teamId, judge){
+  const rec = state.scores?.[teamId]?.[judge];
+  if(!rec) return { total:0, count:0 };
+  let total = 0, count = 0;
+  for(const it of ALL_ITEMS){
+    if(typeof rec[it.id] === "number"){ total += rec[it.id]; count++; }
+  }
+  return { total, count };
+}
+function judgeGroupTotal(teamId, judge, groupId){
+  const rec = state.scores?.[teamId]?.[judge];
+  if(!rec) return 0;
+  let total = 0;
+  for(const it of ALL_ITEMS){ if(it.groupId===groupId && typeof rec[it.id]==="number") total += rec[it.id]; }
+  return total;
+}
+function teamAggregate(teamId){
+  const judges = Object.keys(state.scores?.[teamId] || {});
+  const scored = judges.filter(j => judgeTotalForTeam(teamId,j).count > 0);
+  if(scored.length === 0) return { avg:0, judges:0, groupAvg: CRITERIA.map(()=>0) };
+  let sum = 0;
+  const groupSums = CRITERIA.map(()=>0);
+  scored.forEach(j=>{
+    sum += judgeTotalForTeam(teamId,j).total;
+    CRITERIA.forEach((g,gi)=>{ groupSums[gi] += judgeGroupTotal(teamId,j,g.id); });
+  });
+  return {
+    avg: sum/scored.length,
+    judges: scored.length,
+    groupAvg: groupSums.map(s => s/scored.length)
+  };
+}
+function teamStatus(teamId){
+  const judge = getJudge();
+  const { count } = judgeTotalForTeam(teamId, judge);
+  if(count === 0) return "none";
+  if(count === ALL_ITEMS.length) return "done";
+  return "partial";
+}
+
+/* ===================== Render: sidebar ===================== */
+function renderSidebar(){
+  const wrap = document.getElementById("teamList");
+  const q = (document.getElementById("teamSearch").value||"").toLowerCase().trim();
+  const teams = state.teams.filter(t => !q || (t.name+" "+t.code).toLowerCase().includes(q));
+  if(state.teams.length === 0){
+    wrap.innerHTML = '<div class="empty-hint">Chưa có đội thi nào.<br>Tải lên file CSV danh sách đội để bắt đầu chấm.</div>';
+    return;
+  }
+  if(teams.length === 0){
+    wrap.innerHTML = '<div class="empty-hint">Không tìm thấy đội phù hợp.</div>';
+    return;
+  }
+  wrap.innerHTML = teams.map(t=>{
+    const st = teamStatus(t.id);
+    const active = t.id === currentTeamId ? "active":"";
+    const dotCls = st === "done" ? "done" : st === "partial" ? "partial" : "";
+    return `<div class="team-item ${active}" data-id="${t.id}">
+      <div class="status-dot ${dotCls}"></div>
+      <div class="ti-main">
+        <div class="ti-code">${escapeHtml(t.code)}</div>
+        <div class="ti-name">${escapeHtml(t.name)}</div>
+      </div>
+    </div>`;
+  }).join("");
+  wrap.querySelectorAll(".team-item").forEach(el=>{
+    el.addEventListener("click", ()=>{ currentTeamId = el.dataset.id; renderAll(); });
+  });
+}
+
+/* ===================== Render: scoring panel ===================== */
+function renderScorePanel(){
+  const wrap = document.getElementById("scorePanel");
+  const team = state.teams.find(t=>t.id===currentTeamId);
+  if(!team){
+    wrap.innerHTML = `<div class="placeholder">
+      <div class="big">Chưa chọn đội thi</div>
+      <div>Tải lên danh sách đội hoặc thêm thủ công ở thanh bên trái, sau đó chọn một đội để bắt đầu chấm điểm.</div>
+    </div>`;
+    return;
+  }
+  const judge = getJudge();
+  const { total } = judgeTotalForTeam(team.id, judge);
+  let html = `<div class="score-header">
+    <div class="sh-title">
+      <div class="code">${escapeHtml(team.code)}${team.extra ? " · "+escapeHtml(team.extra) : ""}</div>
+      <h2>${escapeHtml(team.name)}</h2>
+    </div>
+    <div class="sh-total">
+      <div class="num">${fmt(total)}<span style="font-size:15px;color:var(--sub);font-weight:700">/${MAX_TOTAL}</span></div>
+      <div class="lbl">Tổng điểm (${escapeHtml(judge)})</div>
+    </div>
+  </div>`;
+
+  const aiScores = state.scores?.[team.id]?.[AI_JUDGE_NAME];
+  const aiNotes = getNotes(team.id, AI_JUDGE_NAME);
+  if(judge !== AI_JUDGE_NAME && aiScores){
+    const { total: aiTotal } = judgeTotalForTeam(team.id, AI_JUDGE_NAME);
+    html += `<div class="ai-suggest">
+      <div class="as-head">
+        <b>🤖 Gợi ý từ AI: ${fmt(aiTotal)}/${MAX_TOTAL} điểm</b>
+        <span class="toggle-link" id="aiSuggestToggle">Xem giải thích chi tiết</span>
+        <button class="btn primary small" id="btnApplyAi">Áp dụng điểm AI vào phần chấm của tôi</button>
+      </div>
+      <div class="as-body" id="aiSuggestBody">
+        ${ALL_ITEMS.map(it=>{
+          const s = aiScores[it.id];
+          const ex = aiNotes?.[it.id] || "";
+          if(typeof s !== "number") return "";
+          return `<div class="ai-explain-row">
+            <div class="eh"><span>[${it.id}] ${escapeHtml(it.label)}</span><span>${fmt(s)}/${it.max}</span></div>
+            <div class="et">${escapeHtml(ex)}</div>
+          </div>`;
+        }).join("")}
+        ${aiNotes?._overall ? `<div class="ai-overall"><b>Nhận xét tổng quan AI:</b> ${escapeHtml(aiNotes._overall)}</div>` : ""}
+      </div>
+    </div>`;
+  }
+
+  CRITERIA.forEach(g=>{
+    const gTotal = judgeGroupTotal(team.id, judge, g.id);
+    html += `<div class="group-card">
+      <div class="group-head">
+        <div class="gnum">${g.id}</div>
+        <div class="gname">${escapeHtml(g.name)}</div>
+        <div class="gscore">${fmt(gTotal)} / ${g.max}</div>
+      </div>
+      <div class="group-body">`;
+    g.items.forEach(it=>{
+      const val = getScore(team.id, judge, it.id);
+      html += `<div class="item-row">
+        <div class="ilabel">${escapeHtml(it.label)}</div>
+        <div class="imax">tối đa ${it.max}</div>
+        <input type="number" min="0" max="${it.max}" step="0.5" data-item="${it.id}"
+          value="${typeof val==='number' ? val : ''}" placeholder="0">
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  wrap.innerHTML = html;
+  const aiToggle = document.getElementById("aiSuggestToggle");
+  if(aiToggle){
+    aiToggle.addEventListener("click", ()=>{
+      document.getElementById("aiSuggestBody").classList.toggle("open");
+    });
+  }
+  const btnApplyAi = document.getElementById("btnApplyAi");
+  if(btnApplyAi){
+    btnApplyAi.addEventListener("click", ()=>{
+      ALL_ITEMS.forEach(it=>{
+        const s = aiScores[it.id];
+        if(typeof s === "number") setScore(team.id, judge, it.id, s);
+      });
+      renderScorePanel();
+      renderSidebarStatusOnly();
+      toast("Đã áp dụng điểm AI");
+    });
+  }
+  wrap.querySelectorAll('input[type=number]').forEach(inp=>{
+    inp.addEventListener("input", ()=>{
+      const itemId = inp.dataset.item;
+      const maxV = parseFloat(inp.max);
+      let v = inp.value === "" ? null : parseFloat(inp.value);
+      if(v !== null && !isNaN(v)){
+        if(v > maxV) v = maxV;
+        if(v < 0) v = 0;
+      }
+      setScore(team.id, judge, itemId, v);
+      // live-update totals without full re-render (keeps focus)
+      updateScoreTotals(team.id, judge);
+      renderSidebarStatusOnly();
+    });
+    inp.addEventListener("blur", ()=>{ inp.value = getScore(team.id, judge, inp.dataset.item) ?? ""; });
+  });
+}
+function updateScoreTotals(teamId, judge){
+  const { total } = judgeTotalForTeam(teamId, judge);
+  const numEl = document.querySelector(".score-header .sh-total .num");
+  if(numEl) numEl.innerHTML = `${fmt(total)}<span style="font-size:15px;color:var(--sub);font-weight:700">/${MAX_TOTAL}</span>`;
+  document.querySelectorAll(".group-card").forEach((card,gi)=>{
+    const g = CRITERIA[gi];
+    const gTotal = judgeGroupTotal(teamId, judge, g.id);
+    card.querySelector(".gscore").textContent = `${fmt(gTotal)} / ${g.max}`;
+  });
+}
+function renderSidebarStatusOnly(){
+  document.querySelectorAll(".team-item").forEach(el=>{
+    const st = teamStatus(el.dataset.id);
+    const dot = el.querySelector(".status-dot");
+    dot.className = "status-dot" + (st==="done" ? " done" : st==="partial" ? " partial" : "");
+  });
+}
+
+/* ===================== Render: ranking panel ===================== */
+function renderRankPanel(){
+  const wrap = document.getElementById("rankPanel");
+  if(state.teams.length === 0){
+    wrap.innerHTML = `<div class="placeholder"><div class="big">Chưa có dữ liệu</div><div>Thêm đội thi và chấm điểm để xem bảng xếp hạng.</div></div>`;
+    return;
+  }
+  const rows = state.teams.map(t=>({ team:t, agg: teamAggregate(t.id) }))
+    .sort((a,b)=> b.agg.avg - a.agg.avg);
+
+  let html = `<div class="rank-toolbar">
+    <h2>Bảng xếp hạng (${state.teams.length} đội)</h2>
+    <button class="btn primary small" id="btnExportRank">⬇ Xuất CSV kết quả</button>
+  </div>
+  <div style="overflow-x:auto">
+  <table class="rank">
+    <thead><tr>
+      <th>Hạng</th><th>Mã số</th><th>Tên đội / dự án</th>
+      ${CRITERIA.map(g=>`<th class="num">Nhóm ${g.id}<br>(/${g.max})</th>`).join("")}
+      <th class="num">Tổng<br>(/${MAX_TOTAL})</th>
+      <th class="num">Số GK<br>đã chấm</th>
+    </tr></thead>
+    <tbody>`;
+  rows.forEach((r,i)=>{
+    const rank = i+1;
+    const badgeCls = rank===1?"top1":rank===2?"top2":rank===3?"top3":"";
+    html += `<tr>
+      <td><span class="rank-badge ${badgeCls}">${rank}</span></td>
+      <td>${escapeHtml(r.team.code)}</td>
+      <td>${escapeHtml(r.team.name)}</td>
+      ${r.agg.groupAvg.map(v=>`<td class="num">${r.agg.judges? fmt(v):"—"}</td>`).join("")}
+      <td class="num total-cell">${r.agg.judges ? fmt(r.agg.avg) : "—"}</td>
+      <td class="num judges-cell">${r.agg.judges}</td>
+    </tr>`;
+  });
+  html += `</tbody></table></div>
+  <p style="font-size:11.5px;color:var(--sub);margin-top:10px">Điểm là trung bình cộng của tất cả giám khảo đã chấm cho từng đội (bao gồm cả điểm AI ${escapeHtml(AI_JUDGE_NAME)}, nếu có).</p>`;
+  wrap.innerHTML = html;
+  document.getElementById("btnExportRank").addEventListener("click", exportRankingCSV);
+}
+
+/* ===================== AI scoring (Anthropic Claude API, called directly from browser) ===================== */
+function buildRubricText(){
+  return CRITERIA.map(g =>
+    `${g.id}. ${g.name} (tối đa ${g.max} điểm)\n` +
+    g.items.map(it => `   - [${it.id}] ${it.label} (tối đa ${it.max} điểm)`).join("\n")
+  ).join("\n\n");
+}
+function buildToolSchema(){
+  const props = {};
+  ALL_ITEMS.forEach(it=>{
+    props[it.id] = {
+      type: "object",
+      properties: {
+        score: { type: "number", minimum: 0, maximum: it.max, description: `Điểm cho tiêu chí, từ 0 đến ${it.max}, có thể lẻ 0.5` },
+        explain: { type: "string", description: "Giải thích ngắn gọn (1-3 câu, tiếng Việt) lý do chấm điểm này" }
+      },
+      required: ["score","explain"]
+    };
+  });
+  return {
+    type: "object",
+    properties: {
+      scores: { type: "object", properties: props, required: ALL_ITEMS.map(it=>it.id) },
+      overall_comment: { type: "string", description: "Nhận xét tổng quan về dự án, 2-4 câu, tiếng Việt" }
+    },
+    required: ["scores","overall_comment"]
+  };
+}
+async function callAiForTeam(fileText){
+  const system = `Bạn là giám khảo chuyên môn của cuộc thi khởi nghiệp đổi mới sáng tạo "SURF 2026 - Đà Nẵng". ` +
+    `Hãy đọc kỹ nội dung hồ sơ dự án do thí sinh cung cấp và chấm điểm nghiêm túc, khách quan, công bằng theo đúng bộ tiêu chí Vòng sơ khảo dưới đây. ` +
+    `Được phép cho điểm lẻ đến 0.5. Nếu hồ sơ thiếu thông tin để đánh giá một tiêu chí, hãy chấm điểm thấp và nêu rõ lý do là thiếu thông tin.\n\n` +
+    `BỘ TIÊU CHÍ:\n${buildRubricText()}\n\n` +
+    `Hãy gọi công cụ submit_scores để nộp kết quả chấm điểm.`;
+  const body = {
+    model: aiConfig.model || "claude-sonnet-5",
+    max_tokens: 4096,
+    system,
+    messages: [{ role:"user", content: fileText.slice(0, 20000) }],
+    tools: [{ name:"submit_scores", description:"Nộp điểm và giải thích cho từng tiêu chí chấm thi", input_schema: buildToolSchema() }],
+    tool_choice: { type:"tool", name:"submit_scores" }
+  };
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": aiConfig.apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true"
+    },
+    body: JSON.stringify(body)
+  });
+  if(!res.ok){
+    const errText = await res.text().catch(()=> "");
+    throw new Error(`HTTP ${res.status} — ${errText.slice(0,200)}`);
+  }
+  const data = await res.json();
+  const toolBlock = (data.content||[]).find(b=>b.type==="tool_use");
+  if(!toolBlock) throw new Error("API không trả về kết quả tool_use hợp lệ");
+  return toolBlock.input;
+}
+/* ---- Text extraction for .txt/.md/.pdf/.docx ---- */
+const PDFJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+const PDFJS_WORKER_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+const JSZIP_URL = "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";
+const _scriptCache = {};
+function loadScriptOnce(src){
+  if(_scriptCache[src]) return _scriptCache[src];
+  _scriptCache[src] = new Promise((resolve, reject)=>{
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = ()=>resolve();
+    s.onerror = ()=>reject(new Error("Không tải được thư viện xử lý file (cần kết nối mạng): "+src));
+    document.head.appendChild(s);
+  });
+  return _scriptCache[src];
+}
+function getExt(filename){
+  const m = filename.match(/\.([a-z0-9]+)$/i);
+  return m ? m[1].toLowerCase() : "";
+}
+async function extractPdfText(file){
+  await loadScriptOnce(PDFJS_URL);
+  if(!window.pdfjsLib.GlobalWorkerOptions.workerSrc){
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
+  }
+  const buf = await file.arrayBuffer();
+  const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
+  let text = "";
+  for(let i=1; i<=pdf.numPages; i++){
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(it=>it.str).join(" ") + "\n\n";
+  }
+  if(!text.trim()) throw new Error("Không trích xuất được văn bản từ PDF (có thể là bản scan/ảnh, không có lớp văn bản).");
+  return text;
+}
+async function extractDocxText(file){
+  await loadScriptOnce(JSZIP_URL);
+  const zip = await window.JSZip.loadAsync(await file.arrayBuffer());
+  const xmlFile = zip.file("word/document.xml");
+  if(!xmlFile) throw new Error("File .docx không hợp lệ (không tìm thấy word/document.xml).");
+  const xml = await xmlFile.async("text");
+  let text = xml
+    .replace(/<\/w:p>/g, "\n")
+    .replace(/<w:tab\/>/g, "\t")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"').replace(/&apos;/g, "'");
+  text = text.replace(/\n{3,}/g, "\n\n").trim();
+  if(!text) throw new Error("Không trích xuất được văn bản từ file .docx.");
+  return text;
+}
+async function extractTextFromFile(file){
+  const ext = getExt(file.name);
+  if(ext === "pdf") return extractPdfText(file);
+  if(ext === "docx") return extractDocxText(file);
+  return file.text();
+}
+
+function matchOrCreateTeamByName(name){
+  const clean = name.trim();
+  let team = state.teams.find(t => t.name.trim().toLowerCase() === clean.toLowerCase());
+  if(!team){
+    team = { id: uid(), code: String(state.teams.length+1), name: clean, extra:"" };
+    state.teams.push(team);
+  }
+  return team;
+}
+function renderAiFileQueue(){
+  const wrap = document.getElementById("aiFileQueue");
+  if(!wrap) return;
+  if(aiQueue.length === 0){ wrap.innerHTML = ""; return; }
+  wrap.innerHTML = aiQueue.map((q,i)=>{
+    const labels = { pending:"Chờ chấm", extracting:"Đang đọc file…", running:"Đang chấm điểm AI…", done:"Xong", error:"Lỗi" };
+    const cls = q.status === "extracting" ? "running" : q.status;
+    const title = q.status === "error" && q.error ? ` title="${escapeHtml(q.error)}"` : "";
+    return `<div class="fq-row">
+      <span class="fq-name">${escapeHtml(q.teamName)}</span>
+      <span class="fq-status ${cls}"${title}>${labels[q.status]}</span>
+    </div>`;
+  }).join("");
+}
+async function runAiScoring(){
+  if(aiRunning) return;
+  if(!aiConfig.apiKey){ toast("Vui lòng nhập API key trước"); return; }
+  if(aiQueue.length === 0){ toast("Chưa chọn file nào"); return; }
+  aiRunning = true;
+  document.getElementById("btnAiRun").disabled = true;
+  let okCount = 0;
+  for(const q of aiQueue){
+    q.status = "extracting";
+    renderAiFileQueue();
+    try{
+      const text = await extractTextFromFile(q.file);
+      q.status = "running";
+      renderAiFileQueue();
+      const result = await callAiForTeam(text);
+      ALL_ITEMS.forEach(it=>{
+        const entry = result.scores?.[it.id];
+        if(entry && typeof entry.score === "number"){
+          let v = Math.max(0, Math.min(it.max, entry.score));
+          setScore(q.teamId, AI_JUDGE_NAME, it.id, v);
+          setNote(q.teamId, AI_JUDGE_NAME, it.id, entry.explain || "");
+        }
+      });
+      setNote(q.teamId, AI_JUDGE_NAME, "_overall", result.overall_comment || "");
+      q.status = "done";
+      okCount++;
+    }catch(e){
+      q.status = "error";
+      q.error = e.message || String(e);
+    }
+    renderAiFileQueue();
+    renderSidebarStatusOnly();
+  }
+  aiRunning = false;
+  document.getElementById("btnAiRun").disabled = false;
+  persist();
+  renderAll();
+  toast(`Hoàn tất: ${okCount}/${aiQueue.length} đội đã được AI chấm điểm`);
+}
+function renderAiResults(){
+  const wrap = document.getElementById("aiResultsList");
+  if(!wrap) return;
+  const teamsWithAi = state.teams.filter(t => state.scores?.[t.id]?.[AI_JUDGE_NAME]);
+  if(teamsWithAi.length === 0){ wrap.innerHTML = '<p style="font-size:12.5px;color:var(--sub)">Chưa có đội nào được AI chấm điểm.</p>'; return; }
+  wrap.innerHTML = teamsWithAi.map(t=>{
+    const { total } = judgeTotalForTeam(t.id, AI_JUDGE_NAME);
+    const notes = getNotes(t.id, AI_JUDGE_NAME) || {};
+    return `<div class="ai-result-card">
+      <div class="ai-result-head" data-team="${t.id}">
+        <span class="chev">▶</span>
+        <span class="name">${escapeHtml(t.code)} · ${escapeHtml(t.name)}</span>
+        <span class="score">${fmt(total)}/${MAX_TOTAL}</span>
+      </div>
+      <div class="ai-result-body" id="aiBody_${t.id}">
+        ${ALL_ITEMS.map(it=>{
+          const s = state.scores[t.id][AI_JUDGE_NAME][it.id];
+          if(typeof s !== "number") return "";
+          return `<div class="ai-explain-row">
+            <div class="eh"><span>[${it.id}] ${escapeHtml(it.label)}</span><span>${fmt(s)}/${it.max}</span></div>
+            <div class="et">${escapeHtml(notes[it.id]||"")}</div>
+          </div>`;
+        }).join("")}
+        ${notes._overall ? `<div class="ai-overall"><b>Nhận xét tổng quan:</b> ${escapeHtml(notes._overall)}</div>` : ""}
+      </div>
+    </div>`;
+  }).join("");
+  wrap.querySelectorAll(".ai-result-head").forEach(h=>{
+    h.addEventListener("click", ()=>{
+      h.classList.toggle("open");
+      document.getElementById("aiBody_"+h.dataset.team).classList.toggle("open");
+    });
+  });
+}
+function renderAiPanel(){
+  const wrap = document.getElementById("aiPanel");
+  wrap.innerHTML = `
+    <div class="ai-card">
+      <h3>Cấu hình AI (Anthropic Claude API)</h3>
+      <div class="row2">
+        <div>
+          <label>API Key</label>
+          <input type="password" id="aiApiKey" placeholder="sk-ant-..." value="${escapeHtml(aiConfig.apiKey)}">
+        </div>
+        <div>
+          <label>Model</label>
+          <input type="text" id="aiModel" value="${escapeHtml(aiConfig.model)}">
+        </div>
+      </div>
+      <p class="hint">API key chỉ được lưu trên trình duyệt này (không nằm trong file backup/export) và chỉ dùng để gọi thẳng tới api.anthropic.com khi bạn bấm "Chạy chấm điểm AI". AI chỉ đưa ra gợi ý điểm và giải thích — giám khảo nên xem lại trước khi công nhận kết quả cuối cùng.</p>
+    </div>
+    <div class="ai-card">
+      <h3>Tải hồ sơ dự án để AI chấm (mỗi đội 1 file .txt, .md, .docx hoặc .pdf)</h3>
+      <input type="file" id="aiFilesInput" accept=".txt,.md,.docx,.pdf,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple class="hidden">
+      <div class="row2">
+        <button class="btn primary" id="btnAiUpload">⬆ Chọn file hồ sơ</button>
+        <button class="btn primary" id="btnAiRun">▶ Chạy chấm điểm AI</button>
+      </div>
+      <p class="hint">Tên file (bỏ đuôi .txt/.md/.docx/.pdf) sẽ được dùng làm tên đội — nếu trùng tên đội đã có trong danh sách, AI sẽ chấm cho đội đó; nếu chưa có, một đội mới sẽ được tạo tự động. File .docx và .pdf cần kết nối mạng để tải thư viện đọc file trong lần dùng đầu tiên (JSZip / pdf.js từ cdnjs); PDF quét từ ảnh (không có lớp văn bản) sẽ không đọc được.</p>
+      <div class="file-queue" id="aiFileQueue"></div>
+    </div>
+    <div class="ai-card">
+      <h3>Kết quả AI đã chấm</h3>
+      <div class="ai-results" id="aiResultsList"></div>
+    </div>`;
+
+  document.getElementById("aiApiKey").addEventListener("input", (e)=>{
+    aiConfig.apiKey = e.target.value; saveAiConfig(aiConfig);
+  });
+  document.getElementById("aiModel").addEventListener("input", (e)=>{
+    aiConfig.model = e.target.value; saveAiConfig(aiConfig);
+  });
+  document.getElementById("btnAiUpload").addEventListener("click", ()=> document.getElementById("aiFilesInput").click());
+  document.getElementById("aiFilesInput").addEventListener("change", (e)=>{
+    const files = Array.from(e.target.files||[]);
+    aiQueue = files.map(f=>{
+      const name = f.name.replace(/\.(txt|md|docx|pdf)$/i,"");
+      const team = matchOrCreateTeamByName(name);
+      return { file:f, teamId: team.id, teamName: team.name, status:"pending" };
+    });
+    persist();
+    renderSidebar();
+    renderAiFileQueue();
+    e.target.value = "";
+  });
+  document.getElementById("btnAiRun").addEventListener("click", runAiScoring);
+  renderAiFileQueue();
+  renderAiResults();
+}
+
+/* ===================== Export / Import ===================== */
+function csvEscape(v){
+  v = String(v ?? "");
+  if(/[",\n]/.test(v)) return '"' + v.replace(/"/g,'""') + '"';
+  return v;
+}
+function downloadFile(filename, content, mime){
+  const blob = new Blob([content], {type: mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function exportRankingCSV(){
+  const rows = state.teams.map(t=>({ team:t, agg: teamAggregate(t.id) }))
+    .sort((a,b)=> b.agg.avg - a.agg.avg);
+  const header = ["Hạng","Mã số","Tên đội/dự án", ...CRITERIA.map(g=>`Nhóm ${g.id} (/${g.max})`), `Tổng (/${MAX_TOTAL})`, "Số giám khảo đã chấm"];
+  const lines = [header.map(csvEscape).join(",")];
+  rows.forEach((r,i)=>{
+    lines.push([i+1, r.team.code, r.team.name, ...r.agg.groupAvg.map(v=>r.agg.judges?fmt(v):""), r.agg.judges?fmt(r.agg.avg):"", r.agg.judges].map(csvEscape).join(","));
+  });
+  downloadFile("bang-xep-hang-surf2026.csv", "﻿"+lines.join("\r\n"), "text/csv;charset=utf-8");
+  toast("Đã xuất bảng xếp hạng CSV");
+}
+function exportBackup(){
+  downloadFile("cham-thi-surf2026-backup.json", JSON.stringify(state, null, 2), "application/json");
+  toast("Đã xuất file backup");
+}
+function importBackup(file){
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const data = JSON.parse(reader.result);
+      if(!data.teams) throw new Error("invalid");
+      // merge teams (by code+name) avoiding duplicates
+      const existingKeys = new Set(state.teams.map(t=>t.code+"|"+t.name));
+      const idMap = {};
+      (data.teams||[]).forEach(t=>{
+        const key = t.code+"|"+t.name;
+        let existing = state.teams.find(et=>et.code+"|"+et.name===key);
+        if(existing){ idMap[t.id] = existing.id; }
+        else{
+          const newId = uid();
+          idMap[t.id] = newId;
+          state.teams.push({ id:newId, code:t.code, name:t.name, extra:t.extra||"" });
+        }
+      });
+      // merge scores
+      Object.entries(data.scores||{}).forEach(([oldTeamId, byJudge])=>{
+        const newTeamId = idMap[oldTeamId] || oldTeamId;
+        if(!state.scores[newTeamId]) state.scores[newTeamId] = {};
+        Object.entries(byJudge).forEach(([judge, itemScores])=>{
+          state.scores[newTeamId][judge] = { ...(state.scores[newTeamId][judge]||{}), ...itemScores };
+        });
+      });
+      // merge notes (AI explanations etc.)
+      Object.entries(data.notes||{}).forEach(([oldTeamId, byJudge])=>{
+        const newTeamId = idMap[oldTeamId] || oldTeamId;
+        if(!state.notes[newTeamId]) state.notes[newTeamId] = {};
+        Object.entries(byJudge).forEach(([judge, itemNotes])=>{
+          state.notes[newTeamId][judge] = { ...(state.notes[newTeamId][judge]||{}), ...itemNotes };
+        });
+      });
+      persist();
+      if(!currentTeamId && state.teams[0]) currentTeamId = state.teams[0].id;
+      renderAll();
+      toast("Đã nhập & gộp dữ liệu backup");
+    }catch(e){ toast("File backup không hợp lệ"); }
+  };
+  reader.readAsText(file);
+}
+
+/* ===================== Utils ===================== */
+function fmt(n){
+  n = Math.round(n*10)/10;
+  return Number.isInteger(n) ? String(n) : String(n);
+}
+function escapeHtml(s){
+  return String(s ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+/* ===================== Render all ===================== */
+function renderAll(){
+  renderSidebar();
+  if(currentTab === "score") renderScorePanel();
+  else if(currentTab === "rank") renderRankPanel();
+  else if(currentTab === "ai") renderAiPanel();
+}
+
+/* ===================== Wire up UI ===================== */
+document.getElementById("judgeName").value = state.judgeName;
+document.getElementById("judgeName").addEventListener("input", (e)=>{
+  state.judgeName = e.target.value;
+  scheduleSave();
+  renderAll();
+});
+
+document.getElementById("btnUpload").addEventListener("click", ()=> document.getElementById("csvInput").click());
+document.getElementById("csvInput").addEventListener("change", (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    const newTeams = parseTeamsCSV(reader.result);
+    if(newTeams.length === 0){ toast("Không đọc được đội nào từ file"); return; }
+    const existingKeys = new Set(state.teams.map(t=>t.code+"|"+t.name));
+    let added = 0;
+    newTeams.forEach(t=>{
+      const key = t.code+"|"+t.name;
+      if(!existingKeys.has(key)){ state.teams.push(t); existingKeys.add(key); added++; }
+    });
+    if(!currentTeamId && state.teams[0]) currentTeamId = state.teams[0].id;
+    persist();
+    renderAll();
+    toast(`Đã thêm ${added} đội từ file`);
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+});
+
+document.getElementById("btnManualToggle").addEventListener("click", ()=>{
+  document.getElementById("manualAdd").classList.toggle("open");
+});
+document.getElementById("manSubmit").addEventListener("click", ()=>{
+  const code = document.getElementById("manCode").value.trim() || String(state.teams.length+1);
+  const name = document.getElementById("manName").value.trim();
+  if(!name){ toast("Vui lòng nhập tên đội"); return; }
+  const id = uid();
+  state.teams.push({ id, code, name, extra:"" });
+  currentTeamId = id;
+  document.getElementById("manCode").value = "";
+  document.getElementById("manName").value = "";
+  persist();
+  renderAll();
+  toast("Đã thêm đội");
+});
+
+document.getElementById("teamSearch").addEventListener("input", renderSidebar);
+
+document.getElementById("btnExportBackup").addEventListener("click", exportBackup);
+document.getElementById("btnImportBackup").addEventListener("click", ()=> document.getElementById("jsonInput").click());
+document.getElementById("jsonInput").addEventListener("change", (e)=>{
+  const file = e.target.files[0];
+  if(file) importBackup(file);
+  e.target.value = "";
+});
+
+document.getElementById("btnReset").addEventListener("click", ()=>{
+  if(confirm("Xoá toàn bộ danh sách đội và điểm đã chấm? Hành động này không thể hoàn tác.")){
+    if(confirm("Bạn có chắc chắn? Hãy xuất backup trước nếu cần lưu lại dữ liệu.")){
+      state = defaultState();
+      currentTeamId = null;
+      persist();
+      document.getElementById("judgeName").value = "";
+      renderAll();
+      toast("Đã xoá toàn bộ dữ liệu");
+    }
+  }
+});
+
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    tab.classList.add("active");
+    currentTab = tab.dataset.tab;
+    document.getElementById("scorePanel").classList.toggle("hidden", currentTab!=="score");
+    document.getElementById("rankPanel").classList.toggle("hidden", currentTab!=="rank");
+    document.getElementById("aiPanel").classList.toggle("hidden", currentTab!=="ai");
+    renderAll();
+  });
+});
+
+/* ===================== Init ===================== */
+renderAll();
+</script>
+</body>
+</html>
