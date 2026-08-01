@@ -12,7 +12,7 @@
   --accent-soft:#E4F3EF;
   --ink:#1A2432;
   --sub:#5C6B7C;
-  --bg:#F1F4F7;
+  --bg:#0A1F3D;
   --card:#FFFFFF;
   --line:#E1E6EC;
   --warn:#C97A1F;
@@ -48,6 +48,8 @@ header h1 small{display:block;font-weight:500;opacity:.7;font-size:11px;letter-s
   background:rgba(255,255,255,.08);color:#fff;font-size:14px;opacity:.55;
 }
 .settings-btn:hover{opacity:1;background:rgba(255,255,255,.16)}
+.header-logos{display:flex;align-items:center;gap:10px;flex:none}
+.header-logos img{height:38px;width:auto;max-width:110px;object-fit:contain;border-radius:6px}
 
 /* ===== Settings modal ===== */
 .modal-overlay{
@@ -210,6 +212,10 @@ table.rank tr:hover td{background:#FAFBFC}
 <header>
   <h1>Chấm thi sơ khảo <small>SURF 2026 · Khởi nghiệp đổi mới sáng tạo Đà Nẵng · Chấm bằng AI</small></h1>
   <div class="save-status" id="saveStatus" style="margin-left:auto"></div>
+  <div class="header-logos">
+    <img src="logo-topskills.png" alt="TOPSKILLS">
+    <img src="logo-btc.jpg" alt="BTC">
+  </div>
   <button class="settings-btn" id="btnSettings" title="Cài đặt">⚙</button>
 </header>
 
