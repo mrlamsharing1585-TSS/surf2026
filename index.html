@@ -439,37 +439,58 @@ function buildToolSchema(){
     required: ["scores","overall_comment"]
   };
 }
-async function callAiForTeam(fileText){
+const MAX_INPUT_CHARS = 150000; // ~ well within model context even for lengthy Vietnamese hồ sơ; guards against pathological inputs
+async function callAiForTeam(fileText, attempt){
+  attempt = attempt || 1;
+  const truncated = fileText.length > MAX_INPUT_CHARS;
+  const content = truncated ? fileText.slice(0, MAX_INPUT_CHARS) : fileText;
   const system = `Bạn là giám khảo chuyên môn của cuộc thi khởi nghiệp đổi mới sáng tạo "SURF 2026 - Đà Nẵng". ` +
-    `Hãy đọc kỹ nội dung hồ sơ dự án do thí sinh cung cấp và chấm điểm nghiêm túc, khách quan, công bằng theo đúng bộ tiêu chí Vòng sơ khảo dưới đây. ` +
-    `Được phép cho điểm lẻ đến 0.5. Nếu hồ sơ thiếu thông tin để đánh giá một tiêu chí, hãy chấm điểm thấp và nêu rõ lý do là thiếu thông tin.\n\n` +
+    `Hãy đọc kỹ nội dung hồ sơ dự án do thí sinh cung cấp và chấm điểm nghiêm túc, khách quan, công bằng, bám sát đúng bộ tiêu chí Vòng sơ khảo dưới đây — không tự thêm tiêu chí ngoài danh sách. ` +
+    `Được phép cho điểm lẻ đến 0.5. Nếu hồ sơ thiếu thông tin để đánh giá một tiêu chí cụ thể, hãy chấm điểm thấp cho đúng tiêu chí đó và nêu rõ lý do là thiếu thông tin, không suy diễn hoặc phỏng đoán thay cho thí sinh.` +
+    (truncated ? ` Lưu ý: nội dung hồ sơ khá dài nên chỉ phần đầu được cung cấp dưới đây (đã cắt bớt phần cuối) — hãy chấm dựa trên phần nội dung này.` : ``) + `\n\n` +
     `BỘ TIÊU CHÍ:\n${buildRubricText()}\n\n` +
     `Hãy gọi công cụ submit_scores để nộp kết quả chấm điểm.`;
   const body = {
     model: aiConfig.model || "claude-sonnet-5",
     max_tokens: 4096,
+    temperature: 0,
     system,
-    messages: [{ role:"user", content: fileText.slice(0, 20000) }],
+    messages: [{ role:"user", content }],
     tools: [{ name:"submit_scores", description:"Nộp điểm và giải thích cho từng tiêu chí chấm thi", input_schema: buildToolSchema() }],
     tool_choice: { type:"tool", name:"submit_scores" }
   };
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": aiConfig.apiKey,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true"
-    },
-    body: JSON.stringify(body)
-  });
+  let res;
+  try{
+    res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": aiConfig.apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify(body)
+    });
+  }catch(networkErr){
+    if(attempt < 2) return callAiForTeam(fileText, attempt+1);
+    throw new Error("Lỗi kết nối mạng khi gọi Claude API: " + networkErr.message);
+  }
   if(!res.ok){
     const errText = await res.text().catch(()=> "");
+    const retryable = res.status === 429 || res.status >= 500;
+    if(retryable && attempt < 2){
+      await new Promise(r=>setTimeout(r, 1500));
+      return callAiForTeam(fileText, attempt+1);
+    }
     throw new Error(`HTTP ${res.status} — ${errText.slice(0,200)}`);
   }
   const data = await res.json();
   const toolBlock = (data.content||[]).find(b=>b.type==="tool_use");
   if(!toolBlock) throw new Error("API không trả về kết quả tool_use hợp lệ");
+  const missing = ALL_ITEMS.filter(it => typeof toolBlock.input?.scores?.[it.id]?.score !== "number");
+  if(missing.length > 0 && attempt < 2){
+    return callAiForTeam(fileText, attempt+1);
+  }
   return toolBlock.input;
 }
 /* ---- Text extraction for .txt/.md/.pdf/.docx ---- */
