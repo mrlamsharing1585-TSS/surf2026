@@ -219,6 +219,20 @@ table.rank tr:hover td{background:#FAFBFC}
 .ai-suggest .as-body.open{display:block}
 .ai-suggest .toggle-link{font-size:11.5px;color:var(--accent);font-weight:700;cursor:pointer;text-decoration:underline}
 
+/* Video evidence field */
+.video-card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:14px 18px;margin-bottom:14px;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.video-card .vc-check{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;flex:none}
+.video-card .vc-check input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
+.video-card .vc-url{flex:1;min-width:220px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px}
+.video-card .vc-open{flex:none;font-size:12px;font-weight:700;color:var(--accent);text-decoration:none;white-space:nowrap}
+.video-card .vc-open:hover{text-decoration:underline}
+.video-card.no-video .vc-url,.video-card.no-video .vc-open{opacity:.45;pointer-events:none}
+.video-badge{font-size:11px;margin-left:4px}
+
 .hidden{display:none !important}
 </style>
 </head>
@@ -388,13 +402,19 @@ function parseTeamsCSV(text){
   for(let i=startIdx;i<lines.length;i++){
     const cells = splitCSVLine(lines[i]).map(c=>c.trim());
     if(cells.every(c=>c==="")) continue;
-    let code, name, extra;
+    let code, name, restCells;
     if(cells.length >= 2 && cells[0] !== ""){
-      code = cells[0]; name = cells[1]; extra = cells.slice(2).filter(Boolean).join(" | ");
+      code = cells[0]; name = cells[1]; restCells = cells.slice(2);
     } else {
-      code = String(teams.length+1); name = cells[0]||""; extra = cells.slice(1).filter(Boolean).join(" | ");
+      code = String(teams.length+1); name = cells[0]||""; restCells = cells.slice(1);
     }
-    if(name) teams.push({ id: uid(), code, name, extra });
+    let videoUrl = "";
+    const extraCells = restCells.filter(c=>{
+      if(!videoUrl && /^https?:\/\//i.test(c)){ videoUrl = c; return false; }
+      return Boolean(c);
+    });
+    const extra = extraCells.join(" | ");
+    if(name) teams.push({ id: uid(), code, name, extra, hasVideo: !!videoUrl, videoUrl });
   }
   return teams;
 }
@@ -481,7 +501,7 @@ function renderSidebar(){
       <div class="status-dot ${dotCls}"></div>
       <div class="ti-main">
         <div class="ti-code">${escapeHtml(t.code)}</div>
-        <div class="ti-name">${escapeHtml(t.name)}</div>
+        <div class="ti-name">${escapeHtml(t.name)}${t.hasVideo ? '<span class="video-badge" title="Có video minh chứng">🎬</span>' : ""}</div>
       </div>
     </div>`;
   }).join("");
@@ -512,6 +532,12 @@ function renderScorePanel(){
       <div class="num">${fmt(total)}<span style="font-size:15px;color:var(--sub);font-weight:700">/${MAX_TOTAL}</span></div>
       <div class="lbl">Tổng điểm (${escapeHtml(judge)})</div>
     </div>
+  </div>`;
+
+  html += `<div class="video-card ${team.hasVideo ? "" : "no-video"}" id="videoCard">
+    <label class="vc-check"><input type="checkbox" id="hasVideoChk" ${team.hasVideo ? "checked" : ""}> 🎬 Đội có video minh chứng</label>
+    <input type="text" class="vc-url" id="videoUrlInput" placeholder="Dán link video minh chứng (YouTube, Google Drive, ...)" value="${escapeHtml(team.videoUrl||"")}">
+    <a class="vc-open" id="videoOpenLink" href="${escapeHtml(team.videoUrl||"#")}" target="_blank" rel="noopener">Mở video ↗</a>
   </div>`;
 
   const aiScores = state.scores?.[team.id]?.[AI_JUDGE_NAME];
@@ -561,6 +587,17 @@ function renderScorePanel(){
   });
 
   wrap.innerHTML = html;
+  document.getElementById("hasVideoChk").addEventListener("change", (e)=>{
+    team.hasVideo = e.target.checked;
+    document.getElementById("videoCard").classList.toggle("no-video", !team.hasVideo);
+    scheduleSave();
+    renderSidebarStatusOnly();
+  });
+  document.getElementById("videoUrlInput").addEventListener("input", (e)=>{
+    team.videoUrl = e.target.value;
+    document.getElementById("videoOpenLink").href = e.target.value || "#";
+    scheduleSave();
+  });
   const aiToggle = document.getElementById("aiSuggestToggle");
   if(aiToggle){
     aiToggle.addEventListener("click", ()=>{
@@ -779,7 +816,7 @@ function matchOrCreateTeamByName(name){
   const clean = name.trim();
   let team = state.teams.find(t => t.name.trim().toLowerCase() === clean.toLowerCase());
   if(!team){
-    team = { id: uid(), code: String(state.teams.length+1), name: clean, extra:"" };
+    team = { id: uid(), code: String(state.teams.length+1), name: clean, extra:"", hasVideo:false, videoUrl:"" };
     state.teams.push(team);
   }
   return team;
@@ -810,9 +847,13 @@ async function runAiScoring(){
     renderAiFileQueue();
     try{
       const text = await extractTextFromFile(q.file);
+      const team = state.teams.find(t=>t.id===q.teamId);
+      const videoNote = team?.hasVideo
+        ? `[Thông tin minh chứng] Đội này có nộp video minh chứng tại: ${team.videoUrl || "(chưa có link cụ thể)"}. Lưu ý: bạn không thể xem trực tiếp video, chỉ ghi nhận việc đội đã cung cấp video khi chấm tiêu chí 5.2.\n\n`
+        : `[Thông tin minh chứng] Đội này chưa cung cấp video minh chứng.\n\n`;
       q.status = "running";
       renderAiFileQueue();
-      const result = await callAiForTeam(text);
+      const result = await callAiForTeam(videoNote + text);
       ALL_ITEMS.forEach(it=>{
         const entry = result.scores?.[it.id];
         if(entry && typeof entry.score === "number"){
@@ -944,10 +985,10 @@ function downloadFile(filename, content, mime){
 function exportRankingCSV(){
   const rows = state.teams.map(t=>({ team:t, agg: teamAggregate(t.id) }))
     .sort((a,b)=> b.agg.avg - a.agg.avg);
-  const header = ["Hạng","Mã số","Tên đội/dự án", ...CRITERIA.map(g=>`Nhóm ${g.id} (/${g.max})`), `Tổng (/${MAX_TOTAL})`, "Số giám khảo đã chấm"];
+  const header = ["Hạng","Mã số","Tên đội/dự án", ...CRITERIA.map(g=>`Nhóm ${g.id} (/${g.max})`), `Tổng (/${MAX_TOTAL})`, "Số giám khảo đã chấm", "Có video", "Link video"];
   const lines = [header.map(csvEscape).join(",")];
   rows.forEach((r,i)=>{
-    lines.push([i+1, r.team.code, r.team.name, ...r.agg.groupAvg.map(v=>r.agg.judges?fmt(v):""), r.agg.judges?fmt(r.agg.avg):"", r.agg.judges].map(csvEscape).join(","));
+    lines.push([i+1, r.team.code, r.team.name, ...r.agg.groupAvg.map(v=>r.agg.judges?fmt(v):""), r.agg.judges?fmt(r.agg.avg):"", r.agg.judges, r.team.hasVideo?"Có":"Không", r.team.videoUrl||""].map(csvEscape).join(","));
   });
   downloadFile("bang-xep-hang-surf2026.csv", "﻿"+lines.join("\r\n"), "text/csv;charset=utf-8");
   toast("Đã xuất bảng xếp hạng CSV");
@@ -972,7 +1013,7 @@ function importBackup(file){
         else{
           const newId = uid();
           idMap[t.id] = newId;
-          state.teams.push({ id:newId, code:t.code, name:t.name, extra:t.extra||"" });
+          state.teams.push({ id:newId, code:t.code, name:t.name, extra:t.extra||"", hasVideo:!!t.hasVideo, videoUrl:t.videoUrl||"" });
         }
       });
       // merge scores
@@ -1056,7 +1097,7 @@ document.getElementById("manSubmit").addEventListener("click", ()=>{
   const name = document.getElementById("manName").value.trim();
   if(!name){ toast("Vui lòng nhập tên đội"); return; }
   const id = uid();
-  state.teams.push({ id, code, name, extra:"" });
+  state.teams.push({ id, code, name, extra:"", hasVideo:false, videoUrl:"" });
   currentTeamId = id;
   document.getElementById("manCode").value = "";
   document.getElementById("manName").value = "";
