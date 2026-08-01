@@ -461,7 +461,6 @@ async function callAiForTeam(fileText, attempt){
   const body = {
     model: aiConfig.model || "claude-sonnet-5",
     max_tokens: 4096,
-    temperature: 0,
     system,
     messages: [{ role:"user", content }],
     tools: [{ name:"submit_scores", description:"Nộp điểm và giải thích cho từng tiêu chí chấm thi", input_schema: buildToolSchema() }],
