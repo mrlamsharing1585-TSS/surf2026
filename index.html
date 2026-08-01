@@ -42,12 +42,6 @@ header{
 }
 header h1{font-size:17px;font-weight:800;letter-spacing:.2px}
 header h1 small{display:block;font-weight:500;opacity:.7;font-size:11px;letter-spacing:1px;margin-top:2px}
-.judge-field{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px}
-.judge-field input{
-  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
-  color:#fff;border-radius:8px;padding:7px 10px;width:180px;
-}
-.judge-field input::placeholder{color:rgba(255,255,255,.6)}
 .save-status{font-size:11px;opacity:.7;min-width:90px}
 
 /* ===== Layout ===== */
@@ -94,44 +88,6 @@ header h1 small{display:block;font-weight:500;opacity:.7;font-size:11px;letter-s
 .tab{padding:10px 16px;font-size:13px;font-weight:700;color:var(--sub);border-bottom:2px solid transparent;border-radius:0}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 #panelWrap{flex:1;overflow-y:auto;overflow-x:hidden;padding:22px;min-width:0}
-
-/* Scoring panel */
-.score-header{
-  background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
-  padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow);
-}
-.score-header .sh-title{flex:1;min-width:0}
-.score-header .sh-title .code{font-size:11px;color:var(--sub);font-weight:700;letter-spacing:.5px}
-.score-header .sh-title h2{font-size:18px;font-weight:800;margin-top:2px}
-.score-header .sh-total{text-align:right}
-.score-header .sh-total .num{font-size:28px;font-weight:900;color:var(--accent);line-height:1}
-.score-header .sh-total .lbl{font-size:11px;color:var(--sub);margin-top:2px}
-
-.group-card{
-  background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
-  margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow);
-}
-.group-head{
-  display:flex;align-items:center;gap:10px;padding:13px 18px;background:#FAFBFC;border-bottom:1px solid var(--line);
-}
-.group-head .gnum{
-  width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;font-size:12px;font-weight:800;
-  display:flex;align-items:center;justify-content:center;flex:none;
-}
-.group-head .gname{flex:1;font-size:14px;font-weight:700}
-.group-head .gscore{font-size:13px;font-weight:800;color:var(--accent)}
-.group-body{padding:6px 18px}
-.item-row{
-  display:flex;align-items:center;gap:14px;padding:11px 0;border-bottom:1px solid #F0F2F5;
-}
-.item-row:last-child{border-bottom:none}
-.item-row .ilabel{flex:1;font-size:13px;line-height:1.5;color:var(--ink)}
-.item-row .imax{font-size:11px;color:var(--sub);flex:none;width:56px;text-align:right}
-.item-row input[type=number]{
-  width:64px;flex:none;border:1px solid var(--line);border-radius:8px;padding:7px 8px;
-  font-size:13px;text-align:center;font-weight:700;
-}
-.item-row input[type=number]:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
 
 /* Ranking table */
 .rank-toolbar{display:flex;align-items:center;margin-bottom:14px;gap:10px}
@@ -208,29 +164,21 @@ table.rank tr:hover td{background:#FAFBFC}
 .ai-explain-row .et{font-size:12px;color:var(--sub);line-height:1.6}
 .ai-overall{background:var(--accent-soft);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:12.5px;color:#134F41;line-height:1.6}
 
-.ai-suggest{
-  background:var(--accent-soft);border:1px solid #BFE3D8;border-radius:var(--r-lg);
-  padding:14px 18px;margin-bottom:14px;
+/* Unified team row (AI tab) */
+.ai-result-head{cursor:default}
+.tc-toggle{
+  flex:none;width:26px;height:26px;border-radius:8px;border:1px solid var(--line);background:#fff;
+  color:var(--sub);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;
 }
-.ai-suggest .as-head{display:flex;align-items:center;gap:10px;margin-bottom:4px}
-.ai-suggest .as-head b{font-size:13px}
-.ai-suggest .as-head .btn{margin-left:auto}
-.ai-suggest .as-body{display:none;margin-top:10px}
-.ai-suggest .as-body.open{display:block}
-.ai-suggest .toggle-link{font-size:11.5px;color:var(--accent);font-weight:700;cursor:pointer;text-decoration:underline}
-
-/* Video evidence field */
-.video-card{
-  background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
-  padding:14px 18px;margin-bottom:14px;box-shadow:var(--shadow);
-  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
-}
-.video-card .vc-check{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;flex:none}
-.video-card .vc-check input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
-.video-card .vc-url{flex:1;min-width:220px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px}
-.video-card .vc-open{flex:none;font-size:12px;font-weight:700;color:var(--accent);text-decoration:none;white-space:nowrap}
-.video-card .vc-open:hover{text-decoration:underline}
-.video-card.no-video .vc-url,.video-card.no-video .vc-open{opacity:.45;pointer-events:none}
+.tc-toggle.open{transform:rotate(90deg)}
+.tc-video{display:flex;align-items:center;gap:6px;font-size:11.5px;flex:none}
+.tc-video input[type=checkbox]{width:14px;height:14px;accent-color:var(--accent);cursor:pointer}
+.tc-video input[type=text]{width:170px;border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:11px}
+.tc-video input[type=text]:disabled{background:#F5F7FA;color:var(--sub)}
+.tc-video .tc-open{font-size:11px;font-weight:700;color:var(--accent);text-decoration:none;white-space:nowrap}
+.status-chip{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;flex:none;white-space:nowrap}
+.status-chip.pending{background:#EEF1F4;color:var(--sub)}
+.status-chip.done{background:var(--accent-soft);color:var(--accent)}
 .video-badge{font-size:11px;margin-left:4px}
 
 .hidden{display:none !important}
@@ -239,12 +187,8 @@ table.rank tr:hover td{background:#FAFBFC}
 <body>
 
 <header>
-  <h1>Chấm thi sơ khảo <small>SURF 2026 · Khởi nghiệp đổi mới sáng tạo Đà Nẵng</small></h1>
-  <div class="judge-field">
-    <span>Giám khảo:</span>
-    <input id="judgeName" placeholder="Nhập tên giám khảo…">
-  </div>
-  <div class="save-status" id="saveStatus"></div>
+  <h1>Chấm thi sơ khảo <small>SURF 2026 · Khởi nghiệp đổi mới sáng tạo Đà Nẵng · Chấm bằng AI</small></h1>
+  <div class="save-status" id="saveStatus" style="margin-left:auto"></div>
 </header>
 
 <div id="app">
@@ -271,14 +215,12 @@ table.rank tr:hover td{background:#FAFBFC}
 
   <main id="main">
     <div class="tabs">
-      <div class="tab active" data-tab="score">Chấm điểm</div>
+      <div class="tab active" data-tab="ai">🤖 Chấm bằng AI</div>
       <div class="tab" data-tab="rank">Bảng xếp hạng</div>
-      <div class="tab" data-tab="ai">🤖 Chấm bằng AI</div>
     </div>
     <div id="panelWrap">
-      <div id="scorePanel"></div>
       <div id="rankPanel" class="hidden"></div>
-      <div id="aiPanel" class="hidden"></div>
+      <div id="aiPanel"></div>
     </div>
   </main>
 </div>
@@ -326,19 +268,19 @@ const AI_JUDGE_NAME = "🤖 AI (Claude)";
 const STORAGE_KEY = "surf2026_scoring_v1";
 const AI_CONFIG_KEY = "surf2026_ai_config_v1"; // kept separate so API key is never included in backup export
 let state = loadState();
-let currentTeamId = state.teams[0] ? state.teams[0].id : null;
-let currentTab = "score";
+let currentTab = "ai";
 let saveTimer = null;
-let aiQueue = []; // [{file, teamId, teamName, status, error}]
+let aiQueue = []; // [{file, teamId, teamName, status, error, alreadyDone}]
 let aiRunning = false;
+let expandedTeamIds = new Set();
 
-function defaultState(){ return { judgeName:"", teams:[], scores:{}, notes:{} }; }
+function defaultState(){ return { teams:[], scores:{}, notes:{} }; }
 function loadState(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
     if(!raw) return defaultState();
     const parsed = JSON.parse(raw);
-    return { judgeName: parsed.judgeName||"", teams: parsed.teams||[], scores: parsed.scores||{}, notes: parsed.notes||{} };
+    return { teams: parsed.teams||[], scores: parsed.scores||{}, notes: parsed.notes||{} };
   }catch(e){ return defaultState(); }
 }
 function loadAiConfig(){
@@ -419,29 +361,30 @@ function parseTeamsCSV(text){
   return teams;
 }
 
-/* ===================== Scoring helpers ===================== */
-function getJudge(){ return (state.judgeName||"").trim() || "Giám khảo ẩn danh"; }
-function getScore(teamId, judge, itemId){
-  return state.scores?.[teamId]?.[judge]?.[itemId];
-}
-function setScore(teamId, judge, itemId, value){
+/* ===================== Scoring helpers (điểm luôn do AI chấm, mỗi đội chấm 1 lần) ===================== */
+function setScore(teamId, itemId, value){
   if(!state.scores[teamId]) state.scores[teamId] = {};
-  if(!state.scores[teamId][judge]) state.scores[teamId][judge] = {};
-  if(value === null || value === "" || isNaN(value)) delete state.scores[teamId][judge][itemId];
-  else state.scores[teamId][judge][itemId] = value;
+  if(!state.scores[teamId][AI_JUDGE_NAME]) state.scores[teamId][AI_JUDGE_NAME] = {};
+  if(value === null || value === "" || isNaN(value)) delete state.scores[teamId][AI_JUDGE_NAME][itemId];
+  else state.scores[teamId][AI_JUDGE_NAME][itemId] = value;
   scheduleSave();
 }
-function setNote(teamId, judge, key, text){
+function setNote(teamId, key, text){
   if(!state.notes[teamId]) state.notes[teamId] = {};
-  if(!state.notes[teamId][judge]) state.notes[teamId][judge] = {};
-  state.notes[teamId][judge][key] = text;
+  if(!state.notes[teamId][AI_JUDGE_NAME]) state.notes[teamId][AI_JUDGE_NAME] = {};
+  state.notes[teamId][AI_JUDGE_NAME][key] = text;
   scheduleSave();
 }
-function getNotes(teamId, judge){
-  return state.notes?.[teamId]?.[judge] || null;
+function getNotes(teamId){
+  return state.notes?.[teamId]?.[AI_JUDGE_NAME] || null;
 }
-function judgeTotalForTeam(teamId, judge){
-  const rec = state.scores?.[teamId]?.[judge];
+function clearTeamScore(teamId){
+  if(state.scores[teamId]) delete state.scores[teamId][AI_JUDGE_NAME];
+  if(state.notes[teamId]) delete state.notes[teamId][AI_JUDGE_NAME];
+  scheduleSave();
+}
+function aiTotalForTeam(teamId){
+  const rec = state.scores?.[teamId]?.[AI_JUDGE_NAME];
   if(!rec) return { total:0, count:0 };
   let total = 0, count = 0;
   for(const it of ALL_ITEMS){
@@ -449,32 +392,15 @@ function judgeTotalForTeam(teamId, judge){
   }
   return { total, count };
 }
-function judgeGroupTotal(teamId, judge, groupId){
-  const rec = state.scores?.[teamId]?.[judge];
+function aiGroupTotal(teamId, groupId){
+  const rec = state.scores?.[teamId]?.[AI_JUDGE_NAME];
   if(!rec) return 0;
   let total = 0;
   for(const it of ALL_ITEMS){ if(it.groupId===groupId && typeof rec[it.id]==="number") total += rec[it.id]; }
   return total;
 }
-function teamAggregate(teamId){
-  const judges = Object.keys(state.scores?.[teamId] || {});
-  const scored = judges.filter(j => judgeTotalForTeam(teamId,j).count > 0);
-  if(scored.length === 0) return { avg:0, judges:0, groupAvg: CRITERIA.map(()=>0) };
-  let sum = 0;
-  const groupSums = CRITERIA.map(()=>0);
-  scored.forEach(j=>{
-    sum += judgeTotalForTeam(teamId,j).total;
-    CRITERIA.forEach((g,gi)=>{ groupSums[gi] += judgeGroupTotal(teamId,j,g.id); });
-  });
-  return {
-    avg: sum/scored.length,
-    judges: scored.length,
-    groupAvg: groupSums.map(s => s/scored.length)
-  };
-}
 function teamStatus(teamId){
-  const judge = getJudge();
-  const { count } = judgeTotalForTeam(teamId, judge);
+  const { count } = aiTotalForTeam(teamId);
   if(count === 0) return "none";
   if(count === ALL_ITEMS.length) return "done";
   return "partial";
@@ -495,9 +421,8 @@ function renderSidebar(){
   }
   wrap.innerHTML = teams.map(t=>{
     const st = teamStatus(t.id);
-    const active = t.id === currentTeamId ? "active":"";
     const dotCls = st === "done" ? "done" : st === "partial" ? "partial" : "";
-    return `<div class="team-item ${active}" data-id="${t.id}">
+    return `<div class="team-item" data-id="${t.id}">
       <div class="status-dot ${dotCls}"></div>
       <div class="ti-main">
         <div class="ti-code">${escapeHtml(t.code)}</div>
@@ -506,141 +431,18 @@ function renderSidebar(){
     </div>`;
   }).join("");
   wrap.querySelectorAll(".team-item").forEach(el=>{
-    el.addEventListener("click", ()=>{ currentTeamId = el.dataset.id; renderAll(); });
-  });
-}
-
-/* ===================== Render: scoring panel ===================== */
-function renderScorePanel(){
-  const wrap = document.getElementById("scorePanel");
-  const team = state.teams.find(t=>t.id===currentTeamId);
-  if(!team){
-    wrap.innerHTML = `<div class="placeholder">
-      <div class="big">Chưa chọn đội thi</div>
-      <div>Tải lên danh sách đội hoặc thêm thủ công ở thanh bên trái, sau đó chọn một đội để bắt đầu chấm điểm.</div>
-    </div>`;
-    return;
-  }
-  const judge = getJudge();
-  const { total } = judgeTotalForTeam(team.id, judge);
-  let html = `<div class="score-header">
-    <div class="sh-title">
-      <div class="code">${escapeHtml(team.code)}${team.extra ? " · "+escapeHtml(team.extra) : ""}</div>
-      <h2>${escapeHtml(team.name)}</h2>
-    </div>
-    <div class="sh-total">
-      <div class="num">${fmt(total)}<span style="font-size:15px;color:var(--sub);font-weight:700">/${MAX_TOTAL}</span></div>
-      <div class="lbl">Tổng điểm (${escapeHtml(judge)})</div>
-    </div>
-  </div>`;
-
-  html += `<div class="video-card ${team.hasVideo ? "" : "no-video"}" id="videoCard">
-    <label class="vc-check"><input type="checkbox" id="hasVideoChk" ${team.hasVideo ? "checked" : ""}> 🎬 Đội có video minh chứng</label>
-    <input type="text" class="vc-url" id="videoUrlInput" placeholder="Dán link video minh chứng (YouTube, Google Drive, ...)" value="${escapeHtml(team.videoUrl||"")}">
-    <a class="vc-open" id="videoOpenLink" href="${escapeHtml(team.videoUrl||"#")}" target="_blank" rel="noopener">Mở video ↗</a>
-  </div>`;
-
-  const aiScores = state.scores?.[team.id]?.[AI_JUDGE_NAME];
-  const aiNotes = getNotes(team.id, AI_JUDGE_NAME);
-  if(judge !== AI_JUDGE_NAME && aiScores){
-    const { total: aiTotal } = judgeTotalForTeam(team.id, AI_JUDGE_NAME);
-    html += `<div class="ai-suggest">
-      <div class="as-head">
-        <b>🤖 Gợi ý từ AI: ${fmt(aiTotal)}/${MAX_TOTAL} điểm</b>
-        <span class="toggle-link" id="aiSuggestToggle">Xem giải thích chi tiết</span>
-        <button class="btn primary small" id="btnApplyAi">Áp dụng điểm AI vào phần chấm của tôi</button>
-      </div>
-      <div class="as-body" id="aiSuggestBody">
-        ${ALL_ITEMS.map(it=>{
-          const s = aiScores[it.id];
-          const ex = aiNotes?.[it.id] || "";
-          if(typeof s !== "number") return "";
-          return `<div class="ai-explain-row">
-            <div class="eh"><span>[${it.id}] ${escapeHtml(it.label)}</span><span>${fmt(s)}/${it.max}</span></div>
-            <div class="et">${escapeHtml(ex)}</div>
-          </div>`;
-        }).join("")}
-        ${aiNotes?._overall ? `<div class="ai-overall"><b>Nhận xét tổng quan AI:</b> ${escapeHtml(aiNotes._overall)}</div>` : ""}
-      </div>
-    </div>`;
-  }
-
-  CRITERIA.forEach(g=>{
-    const gTotal = judgeGroupTotal(team.id, judge, g.id);
-    html += `<div class="group-card">
-      <div class="group-head">
-        <div class="gnum">${g.id}</div>
-        <div class="gname">${escapeHtml(g.name)}</div>
-        <div class="gscore">${fmt(gTotal)} / ${g.max}</div>
-      </div>
-      <div class="group-body">`;
-    g.items.forEach(it=>{
-      const val = getScore(team.id, judge, it.id);
-      html += `<div class="item-row">
-        <div class="ilabel">${escapeHtml(it.label)}</div>
-        <div class="imax">tối đa ${it.max}</div>
-        <input type="number" min="0" max="${it.max}" step="0.5" data-item="${it.id}"
-          value="${typeof val==='number' ? val : ''}" placeholder="0">
-      </div>`;
-    });
-    html += `</div></div>`;
-  });
-
-  wrap.innerHTML = html;
-  document.getElementById("hasVideoChk").addEventListener("change", (e)=>{
-    team.hasVideo = e.target.checked;
-    document.getElementById("videoCard").classList.toggle("no-video", !team.hasVideo);
-    scheduleSave();
-    renderSidebarStatusOnly();
-  });
-  document.getElementById("videoUrlInput").addEventListener("input", (e)=>{
-    team.videoUrl = e.target.value;
-    document.getElementById("videoOpenLink").href = e.target.value || "#";
-    scheduleSave();
-  });
-  const aiToggle = document.getElementById("aiSuggestToggle");
-  if(aiToggle){
-    aiToggle.addEventListener("click", ()=>{
-      document.getElementById("aiSuggestBody").classList.toggle("open");
-    });
-  }
-  const btnApplyAi = document.getElementById("btnApplyAi");
-  if(btnApplyAi){
-    btnApplyAi.addEventListener("click", ()=>{
-      ALL_ITEMS.forEach(it=>{
-        const s = aiScores[it.id];
-        if(typeof s === "number") setScore(team.id, judge, it.id, s);
-      });
-      renderScorePanel();
-      renderSidebarStatusOnly();
-      toast("Đã áp dụng điểm AI");
-    });
-  }
-  wrap.querySelectorAll('input[type=number]').forEach(inp=>{
-    inp.addEventListener("input", ()=>{
-      const itemId = inp.dataset.item;
-      const maxV = parseFloat(inp.max);
-      let v = inp.value === "" ? null : parseFloat(inp.value);
-      if(v !== null && !isNaN(v)){
-        if(v > maxV) v = maxV;
-        if(v < 0) v = 0;
+    el.addEventListener("click", ()=>{
+      const id = el.dataset.id;
+      expandedTeamIds.add(id);
+      if(currentTab !== "ai"){
+        document.querySelector('.tab[data-tab="ai"]').click();
+      } else {
+        renderAiPanel();
       }
-      setScore(team.id, judge, itemId, v);
-      // live-update totals without full re-render (keeps focus)
-      updateScoreTotals(team.id, judge);
-      renderSidebarStatusOnly();
+      setTimeout(()=>{
+        document.getElementById("teamRow_"+id)?.scrollIntoView({behavior:"smooth", block:"center"});
+      }, 30);
     });
-    inp.addEventListener("blur", ()=>{ inp.value = getScore(team.id, judge, inp.dataset.item) ?? ""; });
-  });
-}
-function updateScoreTotals(teamId, judge){
-  const { total } = judgeTotalForTeam(teamId, judge);
-  const numEl = document.querySelector(".score-header .sh-total .num");
-  if(numEl) numEl.innerHTML = `${fmt(total)}<span style="font-size:15px;color:var(--sub);font-weight:700">/${MAX_TOTAL}</span>`;
-  document.querySelectorAll(".group-card").forEach((card,gi)=>{
-    const g = CRITERIA[gi];
-    const gTotal = judgeGroupTotal(teamId, judge, g.id);
-    card.querySelector(".gscore").textContent = `${fmt(gTotal)} / ${g.max}`;
   });
 }
 function renderSidebarStatusOnly(){
@@ -658,8 +460,8 @@ function renderRankPanel(){
     wrap.innerHTML = `<div class="placeholder"><div class="big">Chưa có dữ liệu</div><div>Thêm đội thi và chấm điểm để xem bảng xếp hạng.</div></div>`;
     return;
   }
-  const rows = state.teams.map(t=>({ team:t, agg: teamAggregate(t.id) }))
-    .sort((a,b)=> b.agg.avg - a.agg.avg);
+  const rows = state.teams.map(t=>({ team:t, ai: aiTotalForTeam(t.id), groupTotals: CRITERIA.map(g=>aiGroupTotal(t.id, g.id)) }))
+    .sort((a,b)=> b.ai.total - a.ai.total);
 
   let html = `<div class="rank-toolbar">
     <h2>Bảng xếp hạng (${state.teams.length} đội)</h2>
@@ -671,23 +473,26 @@ function renderRankPanel(){
       <th>Hạng</th><th>Mã số</th><th>Tên đội / dự án</th>
       ${CRITERIA.map(g=>`<th class="num">Nhóm ${g.id}<br>(/${g.max})</th>`).join("")}
       <th class="num">Tổng<br>(/${MAX_TOTAL})</th>
-      <th class="num">Số GK<br>đã chấm</th>
+      <th class="num">Trạng thái</th>
+      <th class="num">Video</th>
     </tr></thead>
     <tbody>`;
   rows.forEach((r,i)=>{
     const rank = i+1;
     const badgeCls = rank===1?"top1":rank===2?"top2":rank===3?"top3":"";
+    const done = r.ai.count === ALL_ITEMS.length;
     html += `<tr>
       <td><span class="rank-badge ${badgeCls}">${rank}</span></td>
       <td>${escapeHtml(r.team.code)}</td>
       <td>${escapeHtml(r.team.name)}</td>
-      ${r.agg.groupAvg.map(v=>`<td class="num">${r.agg.judges? fmt(v):"—"}</td>`).join("")}
-      <td class="num total-cell">${r.agg.judges ? fmt(r.agg.avg) : "—"}</td>
-      <td class="num judges-cell">${r.agg.judges}</td>
+      ${r.groupTotals.map(v=>`<td class="num">${done? fmt(v):"—"}</td>`).join("")}
+      <td class="num total-cell">${done ? fmt(r.ai.total) : "—"}</td>
+      <td class="num judges-cell">${done ? "Đã chấm" : r.ai.count>0 ? "Dở dang" : "Chưa chấm"}</td>
+      <td class="num">${r.team.hasVideo ? "🎬" : "—"}</td>
     </tr>`;
   });
   html += `</tbody></table></div>
-  <p style="font-size:11.5px;color:var(--sub);margin-top:10px">Điểm là trung bình cộng của tất cả giám khảo đã chấm cho từng đội (bao gồm cả điểm AI ${escapeHtml(AI_JUDGE_NAME)}, nếu có).</p>`;
+  <p style="font-size:11.5px;color:var(--sub);margin-top:10px">Điểm do AI (${escapeHtml(AI_JUDGE_NAME)}) chấm 1 lần cho mỗi đội. Muốn sửa lại, vào tab "Chấm bằng AI" và bấm "Chấm lại" ở đội tương ứng.</p>`;
   wrap.innerHTML = html;
   document.getElementById("btnExportRank").addEventListener("click", exportRankingCSV);
 }
@@ -826,8 +631,8 @@ function renderAiFileQueue(){
   if(!wrap) return;
   if(aiQueue.length === 0){ wrap.innerHTML = ""; return; }
   wrap.innerHTML = aiQueue.map((q,i)=>{
-    const labels = { pending:"Chờ chấm", extracting:"Đang đọc file…", running:"Đang chấm điểm AI…", done:"Xong", error:"Lỗi" };
-    const cls = q.status === "extracting" ? "running" : q.status;
+    const labels = { pending:"Chờ chấm", extracting:"Đang đọc file…", running:"Đang chấm điểm AI…", done:"Xong", skipped:"Đã chấm trước — bỏ qua", error:"Lỗi" };
+    const cls = q.status === "extracting" ? "running" : q.status === "skipped" ? "pending" : q.status;
     const title = q.status === "error" && q.error ? ` title="${escapeHtml(q.error)}"` : "";
     return `<div class="fq-row">
       <span class="fq-name">${escapeHtml(q.teamName)}</span>
@@ -839,10 +644,17 @@ async function runAiScoring(){
   if(aiRunning) return;
   if(!aiConfig.apiKey){ toast("Vui lòng nhập API key trước"); return; }
   if(aiQueue.length === 0){ toast("Chưa chọn file nào"); return; }
+  const forceRescore = document.getElementById("aiForceRescore")?.checked;
   aiRunning = true;
   document.getElementById("btnAiRun").disabled = true;
-  let okCount = 0;
+  let okCount = 0, skipCount = 0;
   for(const q of aiQueue){
+    if(!forceRescore && teamStatus(q.teamId) === "done"){
+      q.status = "skipped";
+      renderAiFileQueue();
+      skipCount++;
+      continue;
+    }
     q.status = "extracting";
     renderAiFileQueue();
     try{
@@ -858,11 +670,11 @@ async function runAiScoring(){
         const entry = result.scores?.[it.id];
         if(entry && typeof entry.score === "number"){
           let v = Math.max(0, Math.min(it.max, entry.score));
-          setScore(q.teamId, AI_JUDGE_NAME, it.id, v);
-          setNote(q.teamId, AI_JUDGE_NAME, it.id, entry.explain || "");
+          setScore(q.teamId, it.id, v);
+          setNote(q.teamId, it.id, entry.explain || "");
         }
       });
-      setNote(q.teamId, AI_JUDGE_NAME, "_overall", result.overall_comment || "");
+      setNote(q.teamId, "_overall", result.overall_comment || "");
       q.status = "done";
       okCount++;
     }catch(e){
@@ -875,26 +687,35 @@ async function runAiScoring(){
   aiRunning = false;
   document.getElementById("btnAiRun").disabled = false;
   persist();
-  renderAll();
-  toast(`Hoàn tất: ${okCount}/${aiQueue.length} đội đã được AI chấm điểm`);
+  renderTeamsTable();
+  renderSidebar();
+  const skipNote = skipCount ? `, bỏ qua ${skipCount} đội đã chấm trước đó` : "";
+  toast(`Hoàn tất: ${okCount}/${aiQueue.length} đội được AI chấm điểm${skipNote}`);
 }
-function renderAiResults(){
-  const wrap = document.getElementById("aiResultsList");
+function renderTeamsTable(){
+  const wrap = document.getElementById("aiTeamsList");
   if(!wrap) return;
-  const teamsWithAi = state.teams.filter(t => state.scores?.[t.id]?.[AI_JUDGE_NAME]);
-  if(teamsWithAi.length === 0){ wrap.innerHTML = '<p style="font-size:12.5px;color:var(--sub)">Chưa có đội nào được AI chấm điểm.</p>'; return; }
-  wrap.innerHTML = teamsWithAi.map(t=>{
-    const { total } = judgeTotalForTeam(t.id, AI_JUDGE_NAME);
-    const notes = getNotes(t.id, AI_JUDGE_NAME) || {};
-    return `<div class="ai-result-card">
-      <div class="ai-result-head" data-team="${t.id}">
-        <span class="chev">▶</span>
+  if(state.teams.length === 0){ wrap.innerHTML = '<p style="font-size:12.5px;color:var(--sub)">Chưa có đội nào. Tải file CSV danh sách đội hoặc thêm thủ công ở thanh bên trái, hoặc tải hồ sơ ở trên để tự tạo đội.</p>'; return; }
+  wrap.innerHTML = state.teams.map(t=>{
+    const { total, count } = aiTotalForTeam(t.id);
+    const done = count === ALL_ITEMS.length;
+    const notes = getNotes(t.id) || {};
+    const expanded = expandedTeamIds.has(t.id);
+    return `<div class="ai-result-card" id="teamCard_${t.id}">
+      <div class="ai-result-head" id="teamRow_${t.id}">
+        <button class="tc-toggle ${expanded?'open':''}" data-toggle="${t.id}" ${done?'':'style="visibility:hidden"'} title="Xem chi tiết">▶</button>
         <span class="name">${escapeHtml(t.code)} · ${escapeHtml(t.name)}</span>
-        <span class="score">${fmt(total)}/${MAX_TOTAL}</span>
+        <span class="tc-video">
+          <label><input type="checkbox" class="teamVideoChk" data-team="${t.id}" ${t.hasVideo?'checked':''}> 🎬</label>
+          <input type="text" class="teamVideoUrl" data-team="${t.id}" placeholder="Link video minh chứng" value="${escapeHtml(t.videoUrl||"")}" ${t.hasVideo?'':'disabled'}>
+        </span>
+        <span class="status-chip ${done?'done':'pending'}">${done?'Đã chấm':(count>0?'Dở dang':'Chưa chấm')}</span>
+        <span class="score">${done? fmt(total)+'/'+MAX_TOTAL : '—'}</span>
+        ${done ? `<button class="btn small" data-rescore="${t.id}">Chấm lại</button>` : ""}
       </div>
-      <div class="ai-result-body" id="aiBody_${t.id}">
+      <div class="ai-result-body ${expanded?'open':''}" id="aiBody_${t.id}">
         ${ALL_ITEMS.map(it=>{
-          const s = state.scores[t.id][AI_JUDGE_NAME][it.id];
+          const s = state.scores?.[t.id]?.[AI_JUDGE_NAME]?.[it.id];
           if(typeof s !== "number") return "";
           return `<div class="ai-explain-row">
             <div class="eh"><span>[${it.id}] ${escapeHtml(it.label)}</span><span>${fmt(s)}/${it.max}</span></div>
@@ -905,10 +726,42 @@ function renderAiResults(){
       </div>
     </div>`;
   }).join("");
-  wrap.querySelectorAll(".ai-result-head").forEach(h=>{
-    h.addEventListener("click", ()=>{
-      h.classList.toggle("open");
-      document.getElementById("aiBody_"+h.dataset.team).classList.toggle("open");
+
+  wrap.querySelectorAll(".tc-toggle").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.dataset.toggle;
+      if(expandedTeamIds.has(id)) expandedTeamIds.delete(id); else expandedTeamIds.add(id);
+      btn.classList.toggle("open");
+      document.getElementById("aiBody_"+id)?.classList.toggle("open");
+    });
+  });
+  wrap.querySelectorAll(".teamVideoChk").forEach(chk=>{
+    chk.addEventListener("change", (e)=>{
+      const id = chk.dataset.team;
+      const team = state.teams.find(t=>t.id===id);
+      team.hasVideo = e.target.checked;
+      const urlInput = wrap.querySelector(`.teamVideoUrl[data-team="${id}"]`);
+      if(urlInput) urlInput.disabled = !team.hasVideo;
+      scheduleSave();
+      renderSidebar();
+    });
+  });
+  wrap.querySelectorAll(".teamVideoUrl").forEach(inp=>{
+    inp.addEventListener("input", (e)=>{
+      const id = inp.dataset.team;
+      const team = state.teams.find(t=>t.id===id);
+      team.videoUrl = e.target.value;
+      scheduleSave();
+    });
+  });
+  wrap.querySelectorAll("[data-rescore]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.dataset.rescore;
+      if(!confirm("Xoá điểm AI hiện tại của đội này để chấm lại? Bạn cần tải lại file hồ sơ của đội (và tick \"Chấm lại đội đã có điểm\") rồi bấm Chạy chấm điểm AI.")) return;
+      clearTeamScore(id);
+      renderTeamsTable();
+      renderSidebar();
+      toast("Đã xoá điểm cũ — tải lại file hồ sơ của đội này để chấm lại.");
     });
   });
 }
@@ -927,7 +780,7 @@ function renderAiPanel(){
           <input type="text" id="aiModel" value="${escapeHtml(aiConfig.model)}">
         </div>
       </div>
-      <p class="hint">API key chỉ được lưu trên trình duyệt này (không nằm trong file backup/export) và chỉ dùng để gọi thẳng tới api.anthropic.com khi bạn bấm "Chạy chấm điểm AI". AI chỉ đưa ra gợi ý điểm và giải thích — giám khảo nên xem lại trước khi công nhận kết quả cuối cùng.</p>
+      <p class="hint">API key chỉ được lưu trên trình duyệt này (không nằm trong file backup/export) và chỉ dùng để gọi thẳng tới api.anthropic.com khi bạn bấm "Chạy chấm điểm AI".</p>
     </div>
     <div class="ai-card">
       <h3>Tải hồ sơ dự án để AI chấm (mỗi đội 1 file .txt, .md, .docx hoặc .pdf)</h3>
@@ -936,12 +789,15 @@ function renderAiPanel(){
         <button class="btn primary" id="btnAiUpload">⬆ Chọn file hồ sơ</button>
         <button class="btn primary" id="btnAiRun">▶ Chạy chấm điểm AI</button>
       </div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--sub);margin-top:10px;cursor:pointer">
+        <input type="checkbox" id="aiForceRescore" style="width:14px;height:14px;accent-color:var(--accent)"> Chấm lại đội đã có điểm (mặc định: mỗi đội chỉ AI chấm 1 lần, lần chạy sau sẽ tự bỏ qua đội đã chấm)
+      </label>
       <p class="hint">Tên file (bỏ đuôi .txt/.md/.docx/.pdf) sẽ được dùng làm tên đội — nếu trùng tên đội đã có trong danh sách, AI sẽ chấm cho đội đó; nếu chưa có, một đội mới sẽ được tạo tự động. File .docx và .pdf cần kết nối mạng để tải thư viện đọc file trong lần dùng đầu tiên (JSZip / pdf.js từ cdnjs); PDF quét từ ảnh (không có lớp văn bản) sẽ không đọc được.</p>
       <div class="file-queue" id="aiFileQueue"></div>
     </div>
     <div class="ai-card">
-      <h3>Kết quả AI đã chấm</h3>
-      <div class="ai-results" id="aiResultsList"></div>
+      <h3>Danh sách đội</h3>
+      <div class="ai-results" id="aiTeamsList"></div>
     </div>`;
 
   document.getElementById("aiApiKey").addEventListener("input", (e)=>{
@@ -961,11 +817,12 @@ function renderAiPanel(){
     persist();
     renderSidebar();
     renderAiFileQueue();
+    renderTeamsTable();
     e.target.value = "";
   });
   document.getElementById("btnAiRun").addEventListener("click", runAiScoring);
   renderAiFileQueue();
-  renderAiResults();
+  renderTeamsTable();
 }
 
 /* ===================== Export / Import ===================== */
@@ -983,12 +840,13 @@ function downloadFile(filename, content, mime){
   URL.revokeObjectURL(url);
 }
 function exportRankingCSV(){
-  const rows = state.teams.map(t=>({ team:t, agg: teamAggregate(t.id) }))
-    .sort((a,b)=> b.agg.avg - a.agg.avg);
-  const header = ["Hạng","Mã số","Tên đội/dự án", ...CRITERIA.map(g=>`Nhóm ${g.id} (/${g.max})`), `Tổng (/${MAX_TOTAL})`, "Số giám khảo đã chấm", "Có video", "Link video"];
+  const rows = state.teams.map(t=>({ team:t, ai: aiTotalForTeam(t.id), groupTotals: CRITERIA.map(g=>aiGroupTotal(t.id, g.id)) }))
+    .sort((a,b)=> b.ai.total - a.ai.total);
+  const header = ["Hạng","Mã số","Tên đội/dự án", ...CRITERIA.map(g=>`Nhóm ${g.id} (/${g.max})`), `Tổng (/${MAX_TOTAL})`, "Trạng thái", "Có video", "Link video"];
   const lines = [header.map(csvEscape).join(",")];
   rows.forEach((r,i)=>{
-    lines.push([i+1, r.team.code, r.team.name, ...r.agg.groupAvg.map(v=>r.agg.judges?fmt(v):""), r.agg.judges?fmt(r.agg.avg):"", r.agg.judges, r.team.hasVideo?"Có":"Không", r.team.videoUrl||""].map(csvEscape).join(","));
+    const done = r.ai.count === ALL_ITEMS.length;
+    lines.push([i+1, r.team.code, r.team.name, ...r.groupTotals.map(v=>done?fmt(v):""), done?fmt(r.ai.total):"", done?"Đã chấm":(r.ai.count>0?"Dở dang":"Chưa chấm"), r.team.hasVideo?"Có":"Không", r.team.videoUrl||""].map(csvEscape).join(","));
   });
   downloadFile("bang-xep-hang-surf2026.csv", "﻿"+lines.join("\r\n"), "text/csv;charset=utf-8");
   toast("Đã xuất bảng xếp hạng CSV");
@@ -1033,7 +891,6 @@ function importBackup(file){
         });
       });
       persist();
-      if(!currentTeamId && state.teams[0]) currentTeamId = state.teams[0].id;
       renderAll();
       toast("Đã nhập & gộp dữ liệu backup");
     }catch(e){ toast("File backup không hợp lệ"); }
@@ -1053,19 +910,11 @@ function escapeHtml(s){
 /* ===================== Render all ===================== */
 function renderAll(){
   renderSidebar();
-  if(currentTab === "score") renderScorePanel();
-  else if(currentTab === "rank") renderRankPanel();
+  if(currentTab === "rank") renderRankPanel();
   else if(currentTab === "ai") renderAiPanel();
 }
 
 /* ===================== Wire up UI ===================== */
-document.getElementById("judgeName").value = state.judgeName;
-document.getElementById("judgeName").addEventListener("input", (e)=>{
-  state.judgeName = e.target.value;
-  scheduleSave();
-  renderAll();
-});
-
 document.getElementById("btnUpload").addEventListener("click", ()=> document.getElementById("csvInput").click());
 document.getElementById("csvInput").addEventListener("change", (e)=>{
   const file = e.target.files[0];
@@ -1080,7 +929,6 @@ document.getElementById("csvInput").addEventListener("change", (e)=>{
       const key = t.code+"|"+t.name;
       if(!existingKeys.has(key)){ state.teams.push(t); existingKeys.add(key); added++; }
     });
-    if(!currentTeamId && state.teams[0]) currentTeamId = state.teams[0].id;
     persist();
     renderAll();
     toast(`Đã thêm ${added} đội từ file`);
@@ -1098,7 +946,6 @@ document.getElementById("manSubmit").addEventListener("click", ()=>{
   if(!name){ toast("Vui lòng nhập tên đội"); return; }
   const id = uid();
   state.teams.push({ id, code, name, extra:"", hasVideo:false, videoUrl:"" });
-  currentTeamId = id;
   document.getElementById("manCode").value = "";
   document.getElementById("manName").value = "";
   persist();
@@ -1120,9 +967,8 @@ document.getElementById("btnReset").addEventListener("click", ()=>{
   if(confirm("Xoá toàn bộ danh sách đội và điểm đã chấm? Hành động này không thể hoàn tác.")){
     if(confirm("Bạn có chắc chắn? Hãy xuất backup trước nếu cần lưu lại dữ liệu.")){
       state = defaultState();
-      currentTeamId = null;
+      expandedTeamIds = new Set();
       persist();
-      document.getElementById("judgeName").value = "";
       renderAll();
       toast("Đã xoá toàn bộ dữ liệu");
     }
@@ -1134,7 +980,6 @@ document.querySelectorAll(".tab").forEach(tab=>{
     document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
     tab.classList.add("active");
     currentTab = tab.dataset.tab;
-    document.getElementById("scorePanel").classList.toggle("hidden", currentTab!=="score");
     document.getElementById("rankPanel").classList.toggle("hidden", currentTab!=="rank");
     document.getElementById("aiPanel").classList.toggle("hidden", currentTab!=="ai");
     renderAll();
