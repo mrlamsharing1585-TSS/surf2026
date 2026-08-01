@@ -154,7 +154,7 @@ table.rank tr:hover td{background:#FAFBFC}
 .fq-status.error{background:var(--danger-soft);color:var(--danger)}
 .ai-results{display:flex;flex-direction:column;gap:10px}
 .ai-result-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden}
-.ai-result-head{display:flex;align-items:center;gap:12px;padding:13px 18px;cursor:pointer}
+.ai-result-head{display:flex;align-items:center;gap:12px;padding:13px 18px;cursor:pointer;flex-wrap:wrap}
 .ai-result-head .name{flex:1;font-size:13.5px;font-weight:700}
 .ai-result-head .score{font-size:14px;font-weight:800;color:var(--accent)}
 .ai-result-head .chev{font-size:11px;color:var(--sub);transition:transform .15s}
@@ -341,6 +341,14 @@ function getNotes(teamId){
 function clearTeamScore(teamId){
   if(state.scores[teamId]) delete state.scores[teamId][AI_JUDGE_NAME];
   if(state.notes[teamId]) delete state.notes[teamId][AI_JUDGE_NAME];
+  scheduleSave();
+}
+function deleteTeam(teamId){
+  state.teams = state.teams.filter(t => t.id !== teamId);
+  delete state.scores[teamId];
+  delete state.notes[teamId];
+  expandedTeamIds.delete(teamId);
+  aiQueue = aiQueue.filter(q => q.teamId !== teamId);
   scheduleSave();
 }
 function aiTotalForTeam(teamId){
@@ -642,6 +650,7 @@ function renderTeamsTable(){
         <span class="status-chip ${done?'done':'pending'}">${done?'Đã chấm':(count>0?'Dở dang':'Chưa chấm')}</span>
         <span class="score">${done? fmt(total)+'/'+MAX_TOTAL : '—'}</span>
         ${done ? `<button class="btn small" data-rescore="${t.id}">Chấm lại</button>` : ""}
+        <button class="btn danger small" data-delete="${t.id}" title="Xoá đội này khỏi danh sách">🗑 Xoá</button>
       </div>
       <div class="ai-result-body ${expanded?'open':''}" id="aiBody_${t.id}">
         ${ALL_ITEMS.map(it=>{
@@ -680,6 +689,16 @@ function renderTeamsTable(){
       clearTeamScore(id);
       renderTeamsTable();
       toast("Đã xoá điểm cũ — tải lại file hồ sơ của đội này để chấm lại.");
+    });
+  });
+  wrap.querySelectorAll("[data-delete]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.dataset.delete;
+      const team = state.teams.find(t=>t.id===id);
+      if(!confirm(`Xoá hẳn đội "${team?.name||""}" khỏi danh sách? Toàn bộ điểm và giải thích của đội này sẽ mất, không thể hoàn tác.`)) return;
+      deleteTeam(id);
+      renderTeamsTable();
+      toast("Đã xoá đội");
     });
   });
 }
