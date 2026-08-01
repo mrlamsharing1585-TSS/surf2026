@@ -468,6 +468,8 @@ async function callAiForTeam(fileText, attempt){
     tool_choice: { type:"tool", name:"submit_scores" }
   };
   let res;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(()=>controller.abort(), 90000);
   try{
     res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -477,11 +479,17 @@ async function callAiForTeam(fileText, attempt){
         "anthropic-version": "2023-06-01",
         "anthropic-dangerous-direct-browser-access": "true"
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
+      signal: controller.signal
     });
   }catch(networkErr){
+    const isTimeout = networkErr.name === "AbortError";
     if(attempt < 2) return callAiForTeam(fileText, attempt+1);
-    throw new Error("Lỗi kết nối mạng khi gọi Claude API: " + networkErr.message);
+    throw new Error(isTimeout
+      ? "Hết thời gian chờ phản hồi từ Claude API (quá 90 giây) — có thể do mạng chậm/bị chặn. Hãy kiểm tra kết nối mạng rồi thử lại."
+      : "Lỗi kết nối mạng khi gọi Claude API: " + networkErr.message);
+  }finally{
+    clearTimeout(timeoutId);
   }
   if(!res.ok){
     const errText = await res.text().catch(()=> "");
@@ -591,45 +599,50 @@ async function runAiScoring(){
   if(aiQueue.length === 0){ toast("Chưa chọn file nào"); return; }
   const forceRescore = document.getElementById("aiForceRescore")?.checked;
   aiRunning = true;
-  document.getElementById("btnAiRun").disabled = true;
+  const startBtn = document.getElementById("btnAiRun");
+  if(startBtn){ startBtn.disabled = true; startBtn.textContent = "⏳ Đang chấm..."; }
   let okCount = 0, skipCount = 0;
-  for(const q of aiQueue){
-    if(!forceRescore && teamStatus(q.teamId) === "done"){
-      q.status = "skipped";
+  try{
+    for(const q of aiQueue){
+      if(!forceRescore && teamStatus(q.teamId) === "done"){
+        q.status = "skipped";
+        renderAiFileQueue();
+        skipCount++;
+        continue;
+      }
+      q.status = "extracting";
       renderAiFileQueue();
-      skipCount++;
-      continue;
-    }
-    q.status = "extracting";
-    renderAiFileQueue();
-    try{
-      const text = await extractTextFromFile(q.file);
-      const team = state.teams.find(t=>t.id===q.teamId);
-      const videoNote = team?.hasVideo
-        ? `[Thông tin minh chứng] Đội này có nộp video minh chứng. Lưu ý: bạn không thể xem trực tiếp video, chỉ ghi nhận việc đội đã cung cấp video khi chấm tiêu chí 5.2.\n\n`
-        : `[Thông tin minh chứng] Đội này chưa cung cấp video minh chứng.\n\n`;
-      q.status = "running";
+      try{
+        const text = await extractTextFromFile(q.file);
+        const team = state.teams.find(t=>t.id===q.teamId);
+        const videoNote = team?.hasVideo
+          ? `[Thông tin minh chứng] Đội này có nộp video minh chứng. Lưu ý: bạn không thể xem trực tiếp video, chỉ ghi nhận việc đội đã cung cấp video khi chấm tiêu chí 5.2.\n\n`
+          : `[Thông tin minh chứng] Đội này chưa cung cấp video minh chứng.\n\n`;
+        q.status = "running";
+        renderAiFileQueue();
+        const result = await callAiForTeam(videoNote + text);
+        ALL_ITEMS.forEach(it=>{
+          const entry = result.scores?.[it.id];
+          if(entry && typeof entry.score === "number"){
+            let v = Math.max(0, Math.min(it.max, entry.score));
+            setScore(q.teamId, it.id, v);
+            setNote(q.teamId, it.id, entry.explain || "");
+          }
+        });
+        setNote(q.teamId, "_overall", result.overall_comment || "");
+        q.status = "done";
+        okCount++;
+      }catch(e){
+        q.status = "error";
+        q.error = e.message || String(e);
+      }
       renderAiFileQueue();
-      const result = await callAiForTeam(videoNote + text);
-      ALL_ITEMS.forEach(it=>{
-        const entry = result.scores?.[it.id];
-        if(entry && typeof entry.score === "number"){
-          let v = Math.max(0, Math.min(it.max, entry.score));
-          setScore(q.teamId, it.id, v);
-          setNote(q.teamId, it.id, entry.explain || "");
-        }
-      });
-      setNote(q.teamId, "_overall", result.overall_comment || "");
-      q.status = "done";
-      okCount++;
-    }catch(e){
-      q.status = "error";
-      q.error = e.message || String(e);
     }
-    renderAiFileQueue();
+  } finally {
+    aiRunning = false;
+    const btn = document.getElementById("btnAiRun");
+    if(btn){ btn.disabled = false; btn.textContent = "▶ Chạy chấm điểm AI"; }
   }
-  aiRunning = false;
-  document.getElementById("btnAiRun").disabled = false;
   persist();
   renderTeamsTable();
   const skipNote = skipCount ? `, bỏ qua ${skipCount} đội đã chấm trước đó` : "";
@@ -712,7 +725,7 @@ function renderAiPanel(){
       <input type="file" id="aiFilesInput" accept=".txt,.md,.docx,.pdf,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple class="hidden">
       <div class="row2">
         <button class="btn primary" id="btnAiUpload">⬆ Chọn file hồ sơ</button>
-        <button class="btn primary" id="btnAiRun">▶ Chạy chấm điểm AI</button>
+        <button class="btn primary" id="btnAiRun" ${aiRunning ? "disabled" : ""}>${aiRunning ? "⏳ Đang chấm..." : "▶ Chạy chấm điểm AI"}</button>
       </div>
       <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--sub);margin-top:10px;cursor:pointer">
         <input type="checkbox" id="aiForceRescore" style="width:14px;height:14px;accent-color:var(--accent)"> Chấm lại đội đã có điểm (mặc định: mỗi đội chỉ AI chấm 1 lần, lần chạy sau sẽ tự bỏ qua đội đã chấm)
