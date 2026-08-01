@@ -43,6 +43,30 @@ header{
 header h1{font-size:17px;font-weight:800;letter-spacing:.2px}
 header h1 small{display:block;font-weight:500;opacity:.7;font-size:11px;letter-spacing:1px;margin-top:2px}
 .save-status{font-size:11px;opacity:.7;min-width:90px}
+.settings-btn{
+  flex:none;width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.08);color:#fff;font-size:14px;opacity:.55;
+}
+.settings-btn:hover{opacity:1;background:rgba(255,255,255,.16)}
+
+/* ===== Settings modal ===== */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(15,20,28,.55);z-index:100;
+  align-items:center;justify-content:center;padding:20px;
+}
+.modal-overlay.open{display:flex}
+.modal-box{
+  background:var(--card);border-radius:var(--r-lg);padding:22px;max-width:420px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.modal-head h3{font-size:15px;font-weight:800}
+.modal-close{border:none;background:none;font-size:16px;color:var(--sub);cursor:pointer;line-height:1;padding:4px}
+.modal-box label{display:block;font-size:12px;font-weight:700;color:var(--sub);margin:10px 0 4px}
+.modal-box input[type=text],.modal-box input[type=password]{
+  width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13px;
+}
+.modal-box .hint{font-size:11.5px;color:var(--sub);margin-top:10px;line-height:1.6}
 
 /* ===== Layout ===== */
 #app{display:flex;height:calc(100vh - 68px);min-height:520px}
@@ -171,11 +195,8 @@ table.rank tr:hover td{background:#FAFBFC}
   color:var(--sub);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;
 }
 .tc-toggle.open{transform:rotate(90deg)}
-.tc-video{display:flex;align-items:center;gap:6px;font-size:11.5px;flex:none}
+.tc-video{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--sub);flex:none;cursor:pointer}
 .tc-video input[type=checkbox]{width:14px;height:14px;accent-color:var(--accent);cursor:pointer}
-.tc-video input[type=text]{width:170px;border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:11px}
-.tc-video input[type=text]:disabled{background:#F5F7FA;color:var(--sub)}
-.tc-video .tc-open{font-size:11px;font-weight:700;color:var(--accent);text-decoration:none;white-space:nowrap}
 .status-chip{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;flex:none;white-space:nowrap}
 .status-chip.pending{background:#EEF1F4;color:var(--sub)}
 .status-chip.done{background:var(--accent-soft);color:var(--accent)}
@@ -189,7 +210,22 @@ table.rank tr:hover td{background:#FAFBFC}
 <header>
   <h1>Chấm thi sơ khảo <small>SURF 2026 · Khởi nghiệp đổi mới sáng tạo Đà Nẵng · Chấm bằng AI</small></h1>
   <div class="save-status" id="saveStatus" style="margin-left:auto"></div>
+  <button class="settings-btn" id="btnSettings" title="Cài đặt">⚙</button>
 </header>
+
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Cấu hình AI (Anthropic Claude API)</h3>
+      <button class="modal-close" id="btnCloseSettings">✕</button>
+    </div>
+    <label>API Key</label>
+    <input type="password" id="aiApiKey" placeholder="sk-ant-...">
+    <label>Model</label>
+    <input type="text" id="aiModel">
+    <p class="hint">API key chỉ được lưu trên trình duyệt này (không nằm trong file backup/export) và chỉ dùng để gọi thẳng tới api.anthropic.com khi chạy chấm điểm AI.</p>
+  </div>
+</div>
 
 <div id="app">
   <aside id="sidebar">
@@ -661,7 +697,7 @@ async function runAiScoring(){
       const text = await extractTextFromFile(q.file);
       const team = state.teams.find(t=>t.id===q.teamId);
       const videoNote = team?.hasVideo
-        ? `[Thông tin minh chứng] Đội này có nộp video minh chứng tại: ${team.videoUrl || "(chưa có link cụ thể)"}. Lưu ý: bạn không thể xem trực tiếp video, chỉ ghi nhận việc đội đã cung cấp video khi chấm tiêu chí 5.2.\n\n`
+        ? `[Thông tin minh chứng] Đội này có nộp video minh chứng. Lưu ý: bạn không thể xem trực tiếp video, chỉ ghi nhận việc đội đã cung cấp video khi chấm tiêu chí 5.2.\n\n`
         : `[Thông tin minh chứng] Đội này chưa cung cấp video minh chứng.\n\n`;
       q.status = "running";
       renderAiFileQueue();
@@ -705,10 +741,7 @@ function renderTeamsTable(){
       <div class="ai-result-head" id="teamRow_${t.id}">
         <button class="tc-toggle ${expanded?'open':''}" data-toggle="${t.id}" ${done?'':'style="visibility:hidden"'} title="Xem chi tiết">▶</button>
         <span class="name">${escapeHtml(t.code)} · ${escapeHtml(t.name)}</span>
-        <span class="tc-video">
-          <label><input type="checkbox" class="teamVideoChk" data-team="${t.id}" ${t.hasVideo?'checked':''}> 🎬</label>
-          <input type="text" class="teamVideoUrl" data-team="${t.id}" placeholder="Link video minh chứng" value="${escapeHtml(t.videoUrl||"")}" ${t.hasVideo?'':'disabled'}>
-        </span>
+        <label class="tc-video"><input type="checkbox" class="teamVideoChk" data-team="${t.id}" ${t.hasVideo?'checked':''}> 🎬 Có video</label>
         <span class="status-chip ${done?'done':'pending'}">${done?'Đã chấm':(count>0?'Dở dang':'Chưa chấm')}</span>
         <span class="score">${done? fmt(total)+'/'+MAX_TOTAL : '—'}</span>
         ${done ? `<button class="btn small" data-rescore="${t.id}">Chấm lại</button>` : ""}
@@ -740,18 +773,8 @@ function renderTeamsTable(){
       const id = chk.dataset.team;
       const team = state.teams.find(t=>t.id===id);
       team.hasVideo = e.target.checked;
-      const urlInput = wrap.querySelector(`.teamVideoUrl[data-team="${id}"]`);
-      if(urlInput) urlInput.disabled = !team.hasVideo;
       scheduleSave();
       renderSidebar();
-    });
-  });
-  wrap.querySelectorAll(".teamVideoUrl").forEach(inp=>{
-    inp.addEventListener("input", (e)=>{
-      const id = inp.dataset.team;
-      const team = state.teams.find(t=>t.id===id);
-      team.videoUrl = e.target.value;
-      scheduleSave();
     });
   });
   wrap.querySelectorAll("[data-rescore]").forEach(btn=>{
@@ -768,20 +791,6 @@ function renderTeamsTable(){
 function renderAiPanel(){
   const wrap = document.getElementById("aiPanel");
   wrap.innerHTML = `
-    <div class="ai-card">
-      <h3>Cấu hình AI (Anthropic Claude API)</h3>
-      <div class="row2">
-        <div>
-          <label>API Key</label>
-          <input type="password" id="aiApiKey" placeholder="sk-ant-..." value="${escapeHtml(aiConfig.apiKey)}">
-        </div>
-        <div>
-          <label>Model</label>
-          <input type="text" id="aiModel" value="${escapeHtml(aiConfig.model)}">
-        </div>
-      </div>
-      <p class="hint">API key chỉ được lưu trên trình duyệt này (không nằm trong file backup/export) và chỉ dùng để gọi thẳng tới api.anthropic.com khi bạn bấm "Chạy chấm điểm AI".</p>
-    </div>
     <div class="ai-card">
       <h3>Tải hồ sơ dự án để AI chấm (mỗi đội 1 file .txt, .md, .docx hoặc .pdf)</h3>
       <input type="file" id="aiFilesInput" accept=".txt,.md,.docx,.pdf,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple class="hidden">
@@ -800,12 +809,6 @@ function renderAiPanel(){
       <div class="ai-results" id="aiTeamsList"></div>
     </div>`;
 
-  document.getElementById("aiApiKey").addEventListener("input", (e)=>{
-    aiConfig.apiKey = e.target.value; saveAiConfig(aiConfig);
-  });
-  document.getElementById("aiModel").addEventListener("input", (e)=>{
-    aiConfig.model = e.target.value; saveAiConfig(aiConfig);
-  });
   document.getElementById("btnAiUpload").addEventListener("click", ()=> document.getElementById("aiFilesInput").click());
   document.getElementById("aiFilesInput").addEventListener("change", (e)=>{
     const files = Array.from(e.target.files||[]);
@@ -915,6 +918,20 @@ function renderAll(){
 }
 
 /* ===================== Wire up UI ===================== */
+document.getElementById("aiApiKey").value = aiConfig.apiKey;
+document.getElementById("aiModel").value = aiConfig.model;
+document.getElementById("aiApiKey").addEventListener("input", (e)=>{
+  aiConfig.apiKey = e.target.value; saveAiConfig(aiConfig);
+});
+document.getElementById("aiModel").addEventListener("input", (e)=>{
+  aiConfig.model = e.target.value; saveAiConfig(aiConfig);
+});
+document.getElementById("btnSettings").addEventListener("click", ()=> document.getElementById("settingsModal").classList.add("open"));
+document.getElementById("btnCloseSettings").addEventListener("click", ()=> document.getElementById("settingsModal").classList.remove("open"));
+document.getElementById("settingsModal").addEventListener("click", (e)=>{
+  if(e.target.id === "settingsModal") document.getElementById("settingsModal").classList.remove("open");
+});
+
 document.getElementById("btnUpload").addEventListener("click", ()=> document.getElementById("csvInput").click());
 document.getElementById("csvInput").addEventListener("change", (e)=>{
   const file = e.target.files[0];
