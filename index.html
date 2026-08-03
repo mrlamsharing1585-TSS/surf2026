@@ -512,6 +512,8 @@ async function callAiForTeam(fileText, attempt){
 const PDFJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
 const PDFJS_WORKER_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 const JSZIP_URL = "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";
+const HTML2CANVAS_URL = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+const JSPDF_URL = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
 const _scriptCache = {};
 function loadScriptOnce(src){
   if(_scriptCache[src]) return _scriptCache[src];
@@ -663,6 +665,7 @@ function renderTeamsTable(){
         <label class="tc-video"><input type="checkbox" class="teamVideoChk" data-team="${t.id}" ${t.hasVideo?'checked':''}> 🎬 Có video</label>
         <span class="status-chip ${done?'done':'pending'}">${done?'Đã chấm':(count>0?'Dở dang':'Chưa chấm')}</span>
         <span class="score">${done? fmt(total)+'/'+MAX_TOTAL : '—'}</span>
+        ${done ? `<button class="btn small" data-pdf="${t.id}">📄 PDF</button>` : ""}
         ${done ? `<button class="btn small" data-rescore="${t.id}">Chấm lại</button>` : ""}
         <button class="btn danger small" data-delete="${t.id}" title="Xoá đội này khỏi danh sách">🗑 Xoá</button>
       </div>
@@ -694,6 +697,11 @@ function renderTeamsTable(){
       const team = state.teams.find(t=>t.id===id);
       team.hasVideo = e.target.checked;
       scheduleSave();
+    });
+  });
+  wrap.querySelectorAll("[data-pdf]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      downloadTeamReportPDF(btn.dataset.pdf);
     });
   });
   wrap.querySelectorAll("[data-rescore]").forEach(btn=>{
@@ -811,6 +819,95 @@ function exportDetailedReportCSV(){
   });
   downloadFile("bao-cao-chi-tiet-surf2026.csv", "﻿"+lines.join("\r\n"), "text/csv;charset=utf-8");
   toast("Đã xuất báo cáo chi tiết CSV");
+}
+function safeFilenamePart(s){
+  return String(s||"").replace(/[\\/:*?"<>|]/g, "_").trim();
+}
+function buildTeamReportHTML(team){
+  const { total, count } = aiTotalForTeam(team.id);
+  const done = count === ALL_ITEMS.length;
+  const notes = getNotes(team.id) || {};
+  const scores = state.scores?.[team.id]?.[AI_JUDGE_NAME] || {};
+  const genTime = new Date().toLocaleString("vi-VN");
+  let html = `
+    <div style="border-bottom:3px solid #1E7F6B;padding-bottom:14px;margin-bottom:20px">
+      <div style="font-size:11px;color:#5C6B7C;text-transform:uppercase;letter-spacing:1px">SURF 2026 · Khởi nghiệp đổi mới sáng tạo Đà Nẵng — Báo cáo chấm điểm sơ khảo</div>
+      <div style="font-size:22px;font-weight:800;color:#0F2A43;margin-top:6px">${escapeHtml(team.code)} · ${escapeHtml(team.name)}</div>
+      <div style="font-size:12px;color:#5C6B7C;margin-top:4px">Có video minh chứng: ${team.hasVideo ? "Có" : "Không"} · Trạng thái: ${done ? "Đã chấm" : (count>0 ? "Dở dang" : "Chưa chấm")} · Xuất lúc: ${genTime}</div>
+    </div>
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:40px;font-weight:900;color:#1E7F6B">${done ? fmt(total) : "—"}<span style="font-size:18px;color:#5C6B7C;font-weight:700"> / ${MAX_TOTAL}</span></div>
+      <div style="font-size:12px;color:#5C6B7C">Tổng điểm do AI chấm</div>
+    </div>`;
+  CRITERIA.forEach(g=>{
+    const gTotal = aiGroupTotal(team.id, g.id);
+    html += `<div style="margin-bottom:16px;border:1px solid #E1E6EC;border-radius:10px;overflow:hidden">
+      <div style="background:#FAFBFC;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #E1E6EC">
+        <div style="font-weight:700;font-size:13px;color:#0F2A43">${g.id}. ${escapeHtml(g.name)}</div>
+        <div style="font-weight:800;font-size:13px;color:#1E7F6B">${done ? fmt(gTotal) : "—"} / ${g.max}</div>
+      </div>
+      <div style="padding:4px 16px">`;
+    g.items.forEach(it=>{
+      const s = scores[it.id];
+      html += `<div style="padding:10px 0;border-bottom:1px solid #F0F2F5">
+        <div style="display:flex;justify-content:space-between;gap:12px;font-size:12.5px;font-weight:600;color:#1A2432">
+          <span>[${it.id}] ${escapeHtml(it.label)}</span>
+          <span style="white-space:nowrap;color:#1E7F6B;font-weight:800">${typeof s==="number" ? fmt(s) : "—"} / ${it.max}</span>
+        </div>
+        <div style="font-size:11.5px;color:#5C6B7C;margin-top:4px;line-height:1.6">${escapeHtml(notes[it.id]||"(chưa có giải thích)")}</div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+  if(notes._overall){
+    html += `<div style="background:#E4F3EF;border-radius:10px;padding:14px 16px;font-size:12.5px;color:#134F41;line-height:1.7">
+      <b>Nhận xét tổng quan của AI:</b> ${escapeHtml(notes._overall)}
+    </div>`;
+  }
+  html += `<div style="margin-top:24px;padding-top:12px;border-top:1px solid #E1E6EC;font-size:10.5px;color:#9AA5B1;text-align:center">
+    Báo cáo tạo tự động bởi công cụ Chấm thi sơ khảo SURF 2026 — chấm bằng AI (${escapeHtml(AI_JUDGE_NAME)}). Giám khảo con người nên xem lại trước khi công nhận điểm chính thức.
+  </div>`;
+  return html;
+}
+async function downloadTeamReportPDF(teamId){
+  const team = state.teams.find(t=>t.id===teamId);
+  if(!team) return;
+  toast("Đang tạo PDF…");
+  let container;
+  try{
+    await loadScriptOnce(HTML2CANVAS_URL);
+    await loadScriptOnce(JSPDF_URL);
+    container = document.createElement("div");
+    container.style.cssText = "position:fixed;left:-9999px;top:0;width:780px;background:#fff;padding:36px;font-family:Arial, 'Segoe UI', sans-serif;color:#1A2432;box-sizing:border-box;";
+    container.innerHTML = buildTeamReportHTML(team);
+    document.body.appendChild(container);
+
+    const canvas = await window.html2canvas(container, { scale: 2, backgroundColor: "#ffffff" });
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: "pt", format: "a4" });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pageWidth;
+    const imgHeight = canvas.height * imgWidth / canvas.width;
+    const imgData = canvas.toDataURL("image/jpeg", 0.92);
+    let heightLeft = imgHeight;
+    let position = 0;
+    pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+    while(heightLeft > 0){
+      position = -(imgHeight - heightLeft);
+      pdf.addPage();
+      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+    const filename = `bao-cao-${safeFilenamePart(team.code)}-${safeFilenamePart(team.name)}.pdf`;
+    pdf.save(filename);
+    toast("Đã tải PDF báo cáo");
+  }catch(e){
+    toast("Lỗi tạo PDF: " + e.message);
+  }finally{
+    if(container) document.body.removeChild(container);
+  }
 }
 function exportBackup(){
   downloadFile("cham-thi-surf2026-backup.json", JSON.stringify(state, null, 2), "application/json");
