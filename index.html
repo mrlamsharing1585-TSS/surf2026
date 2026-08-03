@@ -733,7 +733,10 @@ function renderAiPanel(){
       <div class="file-queue" id="aiFileQueue"></div>
     </div>
     <div class="ai-card">
-      <h3>Danh sách đội</h3>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+        <h3 style="margin-bottom:0">Danh sách đội</h3>
+        <button class="btn primary small" id="btnExportDetailedReport" style="margin-left:auto">⬇ Tải báo cáo chi tiết (.csv)</button>
+      </div>
       <div class="ai-results" id="aiTeamsList"></div>
     </div>`;
 
@@ -751,6 +754,7 @@ function renderAiPanel(){
     e.target.value = "";
   });
   document.getElementById("btnAiRun").addEventListener("click", runAiScoring);
+  document.getElementById("btnExportDetailedReport").addEventListener("click", exportDetailedReportCSV);
   renderAiFileQueue();
   renderTeamsTable();
 }
@@ -780,6 +784,33 @@ function exportRankingCSV(){
   });
   downloadFile("bang-xep-hang-surf2026.csv", "﻿"+lines.join("\r\n"), "text/csv;charset=utf-8");
   toast("Đã xuất bảng xếp hạng CSV");
+}
+function exportDetailedReportCSV(){
+  if(state.teams.length === 0){ toast("Chưa có đội nào để xuất báo cáo"); return; }
+  const header = ["Mã số","Tên đội/dự án","Trạng thái","Có video","Nhóm","Mã tiêu chí","Tên tiêu chí","Điểm tối đa","Điểm AI chấm","Giải thích của AI","Nhận xét tổng quan AI"];
+  const lines = [header.map(csvEscape).join(",")];
+  const rows = [...state.teams].sort((a,b)=> aiTotalForTeam(b.id).total - aiTotalForTeam(a.id).total);
+  rows.forEach(t=>{
+    const { count } = aiTotalForTeam(t.id);
+    const done = count === ALL_ITEMS.length;
+    const status = done ? "Đã chấm" : (count>0 ? "Dở dang" : "Chưa chấm");
+    const notes = getNotes(t.id) || {};
+    const scores = state.scores?.[t.id]?.[AI_JUDGE_NAME] || {};
+    CRITERIA.forEach(g=>{
+      g.items.forEach(it=>{
+        const s = scores[it.id];
+        lines.push([
+          t.code, t.name, status, t.hasVideo?"Có":"Không",
+          `${g.id}. ${g.name}`, it.id, it.label, it.max,
+          typeof s === "number" ? fmt(s) : "",
+          notes[it.id] || "",
+          notes._overall || ""
+        ].map(csvEscape).join(","));
+      });
+    });
+  });
+  downloadFile("bao-cao-chi-tiet-surf2026.csv", "﻿"+lines.join("\r\n"), "text/csv;charset=utf-8");
+  toast("Đã xuất báo cáo chi tiết CSV");
 }
 function exportBackup(){
   downloadFile("cham-thi-surf2026-backup.json", JSON.stringify(state, null, 2), "application/json");
